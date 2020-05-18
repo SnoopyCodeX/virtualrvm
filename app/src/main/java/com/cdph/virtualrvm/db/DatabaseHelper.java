@@ -18,10 +18,13 @@ public class DatabaseHelper extends SQLiteOpenHelper
 	
 	public static final String COL_USER = "user_name";
 	public static final String COL_PASS = "user_pass";
+	public static final String COL_RANK = "user_rank";
 	public static final String COL_CENT = "user_cent";
 	
 	public static final String COL_NAME = "item_name";
 	public static final String COL_WEIGHT = "item_weight";
+	public static final String COL_TYPE = "item_type";
+	public static final String COL_AMNT = "item_amount";
 	public static final String COL_ID = "item_id";
 	private Context ctx;
 	
@@ -31,15 +34,17 @@ public class DatabaseHelper extends SQLiteOpenHelper
 		this.ctx = ctx;
 		
 		SQLiteDatabase db = getWritableDatabase();
-		String str_sql = "CREATE TABLE IF NOT EXISTS `%s`(`%s` INTEGER AUTO_INCREMENT PRIMARY KEY, `%s` VARCHAR(255), `%s` VARCHAR(255), `%s` VARCHAR(255))";
+		String str_sql1 = "CREATE TABLE IF NOT EXISTS `%s`(`%s` INTEGER AUTO_INCREMENT PRIMARY KEY, `%s` INTEGER(1), `%s` VARCHAR(255), `%s` VARCHAR(255), `%s` VARCHAR(255))";
+		String str_sql2 = "CREATE TABLE IF NOT EXISTS `%s`(`%s` INTEGER AUTO_INCREMENT PRIMARY KEY, `%s` VARCHAR(255), `%s` VARCHAR(255), `%s` VARCHAR(255), `%s` VARCHAR(255), `%s` VARCHAR(255))";
+		
 		try {
 			if(Constants.DEBUG_MODE)
 			{
 				db.execSQL("DROP TABLE IF EXISTS `tb_users`");
 				db.execSQL("DROP TABLE IF EXISTS `tb_items`");
 			}
-			db.execSQL(String.format(str_sql, TB_USER, TB_ID, COL_USER, COL_PASS, COL_CENT));
-			db.execSQL(String.format(str_sql, TB_ITEM, TB_ID, COL_NAME, COL_WEIGHT, COL_ID));
+			db.execSQL(String.format(str_sql1, TB_USER, TB_ID, COL_RANK, COL_USER, COL_PASS, COL_CENT));
+			db.execSQL(String.format(str_sql2, TB_ITEM, TB_ID, COL_ID, COL_NAME, COL_WEIGHT, COL_TYPE, COL_AMNT));
 		} catch(Exception e) {
 			e.printStackTrace();
 			showAsPopup(e.getMessage());

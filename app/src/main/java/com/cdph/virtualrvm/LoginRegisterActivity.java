@@ -46,7 +46,10 @@ public class LoginRegisterActivity extends AppCompatActivity implements View.OnC
 	{
 		super.onResume();
 		
-		if(sp.getBoolean(Constants.KEY_REMEMBER, false))
+		if(sp.getBoolean(Constants.KEY_FIRST_LAUNCH, true))
+			initData();
+		
+		if(sp.getBoolean(Constants.KEY_REMEMBER, false) && sp.getInt(Constants.KEY_RANK, 0) == 0)
 			startActivity(new Intent(this, MainActivity.class));
 	}
 	
@@ -184,8 +187,10 @@ public class LoginRegisterActivity extends AppCompatActivity implements View.OnC
 		
 		String[] userData = db.getUserData(username);
 		SharedPreferences.Editor data = sp.edit();
-		data.putString(Constants.KEY_USERNAME, userData[0]);
-		data.putBoolean(Constants.KEY_REMEMBER, rememberLogin);
+		data.putString(Constants.KEY_USERNAME, userData[0]).commit();
+		data.putString(Constants.KEY_CENTS, userData[2]).commit();
+		data.putInt(Constants.KEY_RANK, Integer.parseInt(userData[3])).commit();
+		data.putBoolean(Constants.KEY_REMEMBER, rememberLogin).commit();
 		startActivity(new Intent(this, MainActivity.class));
 		finish();
 	}
@@ -224,7 +229,20 @@ public class LoginRegisterActivity extends AppCompatActivity implements View.OnC
 			return;
 		}
 		
-		db.insertUserData(username, Base64.encodeToString(password.getBytes(), Base64.DEFAULT), "0.0¢");
+		db.insertUserData(username, Base64.encodeToString(password.getBytes(), Base64.DEFAULT), 0, "0.0¢");
 		Toast.makeText(this, getString(R.string.register_success), Toast.LENGTH_LONG).show();
+	}
+	
+	private void initData()
+	{
+		db.insertItemData("Aquafina", "500mL", "4803925250019", "bottle", "0.50¢");
+		db.insertItemData("Nature's Spring", "350mL", "4800049270107", "bottle", "0.25¢");
+		db.insertItemData("Nature's Spring", "500mL", "4800049720114", "bottle", "0.50¢");
+		
+		db.insertItemData("Sprite", "330mL", "4801981110209", "can", "0.25¢");
+		db.insertItemData("Royal", "330mL", "4801981110100", "can", "0.25¢");
+		db.insertItemData("Coca Cola", "330mL", "4801981110001", "can", "0.25¢");
+		
+		sp.edit().putBoolean(Constants.KEY_FIRST_LAUNCH, false).commit();
 	}
 }
