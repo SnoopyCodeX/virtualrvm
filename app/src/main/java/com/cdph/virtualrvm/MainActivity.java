@@ -98,6 +98,11 @@ public class MainActivity extends AppCompatActivity implements ZBarScannerView.R
 		
 		String username = preference.getString(Constants.KEY_USERNAME, "");
 		String cents = preference.getString(Constants.KEY_CENTS, "");
+		Double cent = Double.parseDouble(cents.replace("¢", "").replace("₱", ""));
+		
+		if(cent >= 1)
+			cents = "₱" + String.valueOf(cent);
+		
 		personalDetail.setTypeface(flatFont);
 		personalDetail.setText(String.format(getString(R.string.personalDetail_content), username, cents));
 		personalDetailHeader.setTypeface(flatFont, Typeface.BOLD);
@@ -108,6 +113,11 @@ public class MainActivity extends AppCompatActivity implements ZBarScannerView.R
 		preference.edit().putString(Constants.KEY_CENTS, cent).commit();
 		String username = preference.getString(Constants.KEY_USERNAME, "");
 		String cents = preference.getString(Constants.KEY_CENTS, "");
+		Double _cent_ = Double.parseDouble(cents.replace("¢", "").replace("₱", ""));
+
+		if(_cent_ >= 1)
+			cents = "₱" + String.valueOf(_cent_);
+			
 		personalDetail.setText(String.format(getString(R.string.personalDetail_content), username, cents));
 	}
 	
@@ -172,10 +182,10 @@ public class MainActivity extends AppCompatActivity implements ZBarScannerView.R
 			scannerInfo.setText(Html.fromHtml(String.format(getString(R.string.scannerInfo_content), id, name, weight, type, amnt)));
 			
 			String[] userData = db.getUserData(preference.getString(Constants.KEY_USERNAME, ""));
-			double user_cent = Double.parseDouble(userData[2].replace("¢", ""));
+			double user_cent = Double.parseDouble(userData[2].replace("¢", "").replace("₱", ""));
 			double item_cent = Double.parseDouble(itemData[4].replace("¢", ""));
-			db.updateUserData("user_cent", String.valueOf(user_cent + item_cent) + "¢", userData[0]);
-			updatePersonalDetail(String.valueOf(user_cent + item_cent) + "¢");
+			db.updateUserData("user_cent", ((user_cent + item_cent) >= 1 ? "₱" : "") + String.valueOf(user_cent + item_cent) + ((user_cent + item_cent) < 1 ? "¢" : ""), userData[0]);
+			updatePersonalDetail(((user_cent + item_cent) >= 1 ? "₱" : "") + String.valueOf(user_cent + item_cent) + ((user_cent + item_cent) < 1 ? "¢" : ""));
 			
 			Toast.makeText(this, Html.fromHtml(String.format(getString(R.string.item_valid), amnt)), Toast.LENGTH_LONG).show();
 		}
