@@ -164,11 +164,11 @@ public class MainActivity extends AppCompatActivity implements ZBarScannerView.R
 		
 		if(itemData != null)
 		{
-			String id = String.format("<font color=\"#00d170\">%s</font>", itemData[0]);
-			String name = String.format("<font color=\"#00d170\">%s</font>", itemData[1]);
-			String weight = String.format("<font color=\"#00d170\">%s</font>", itemData[2]);
-			String type = String.format("<font color=\"#00d170\">%s</font>", itemData[3]);
-			String amnt = String.format("<font color=\"#00d170\">%s</font>", itemData[4]);
+			String id = String.format("<font color=\"#00d170\">%s</font><br/>", itemData[0]);
+			String name = String.format("<font color=\"#00d170\">%s</font><br/>", itemData[1]);
+			String weight = String.format("<font color=\"#00d170\">%s</font><br/>", itemData[2]);
+			String type = String.format("<font color=\"#00d170\">%s</font><br/>", itemData[3]);
+			String amnt = String.format("<font color=\"#00d170\">%s</font><br/>", itemData[4]);
 			scannerInfo.setText(Html.fromHtml(String.format(getString(R.string.scannerInfo_content), id, name, weight, type, amnt)));
 			
 			String[] userData = db.getUserData(preference.getString(Constants.KEY_USERNAME, ""));
