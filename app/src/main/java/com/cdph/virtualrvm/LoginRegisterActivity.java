@@ -236,7 +236,7 @@ public class LoginRegisterActivity extends AppCompatActivity implements View.OnC
 	private void initData()
 	{
 		db.insertItemData("Aquafina", "500mL", "4803925250019", "bottle", "0.50¢");
-		db.insertItemData("Nature's Spring", "350mL", "4800049270107", "bottle", "0.25¢");
+		db.insertItemData("Nature's Spring", "350mL", "4800049720107", "bottle", "0.25¢");
 		db.insertItemData("Nature's Spring", "500mL", "4800049720114", "bottle", "0.50¢");
 		
 		db.insertItemData("Sprite", "330mL", "4801981110209", "can", "0.25¢");
