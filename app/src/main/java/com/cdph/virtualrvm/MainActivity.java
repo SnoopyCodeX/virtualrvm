@@ -68,6 +68,13 @@ public class MainActivity extends AppCompatActivity implements ZBarScannerView.R
 		scannerView.stopCamera();
 	}
 	
+	@Override
+	public void onBackPressed()
+	{
+		super.onBackPressed();
+		finish();
+	}
+	
 	private void initViews()
 	{
 		db = new VirtualRVMDatabase(this);
@@ -162,21 +169,15 @@ public class MainActivity extends AppCompatActivity implements ZBarScannerView.R
 			String weight = String.format("<font color=\"#00d170\">%s</font>", itemData[2]);
 			String type = String.format("<font color=\"#00d170\">%s</font>", itemData[3]);
 			String amnt = String.format("<font color=\"#00d170\">%s</font>", itemData[4]);
-			scannerInfo.setText(String.format(getString(R.string.scannerInfo_content), id, name, weight, type, amnt));
+			scannerInfo.setText(Html.fromHtml(String.format(getString(R.string.scannerInfo_content), id, name, weight, type, amnt)));
 			
 			String[] userData = db.getUserData(preference.getString(Constants.KEY_USERNAME, ""));
 			double user_cent = Double.parseDouble(userData[2].replace("¢", ""));
-			double item_cent = Double.parseDouble(amnt.replace("¢", ""));
+			double item_cent = Double.parseDouble(itemData[4].replace("¢", ""));
 			db.updateUserData("user_cent", String.valueOf(user_cent + item_cent) + "¢", userData[0]);
 			updatePersonalDetail(String.valueOf(user_cent + item_cent) + "¢");
 			
-			Toast.makeText(this, String.format(getString(R.string.item_valid), amnt), Toast.LENGTH_LONG).show();
-			try {
-				Thread.sleep(3000);
-				scannerInfo.setText(String.format(getString(R.string.scannerInfo_content), "", "", "", "", ""));
-			} catch(Exception e) {
-				e.printStackTrace();
-			}
+			Toast.makeText(this, Html.fromHtml(String.format(getString(R.string.item_valid), amnt)), Toast.LENGTH_LONG).show();
 		}
 		else
 			Toast.makeText(this, getString(R.string.item_invalid), Toast.LENGTH_LONG).show();
@@ -188,7 +189,7 @@ public class MainActivity extends AppCompatActivity implements ZBarScannerView.R
 			{
 				scannerView.resumeCameraPreview(MainActivity.this);
 			}
-		}, 100);
+		}, 5000);
 	}
 	
 	@Override
