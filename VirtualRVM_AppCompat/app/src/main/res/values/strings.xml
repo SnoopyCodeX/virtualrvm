@@ -1,0 +1,35 @@
+<resources>
+    <string name="app_name">VirtualRVM</string>
+	
+    <string name="tab_signin">Sign In</string>
+	<string name="tab_signup">Sign Up</string>
+	
+	<string name="header_signin">Client Signin</string>
+	<string name="header_signup">Client Signup</string>
+	
+	<string name="hint_username">Username</string>
+	<string name="hint_password">Password</string>
+	<string name="box_remember">Remember me</string>
+	
+	<string name="nav_already_have_account">Already have an account? </string>
+	<string name="nav_dont_have_account">Don\'t have an account? </string>
+	<string name="nav_signin">Sign In</string>
+	<string name="nav_signup">Sign Up</string>
+	<string name="tab_signout">Sign Out</string>
+	
+	<string name="empty_field">This can\'t be empty</string>
+	<string name="not_valid_account">Not a valid account</string>
+	<string name="incorrect_password">Incorrect password</string>
+	<string name="password_too_short">Password is too short</string>
+	<string name="register_success">Signed up successfully</string>
+	<string name="user_exists">User already exists</string>
+	<string name="item_invalid">Item is not supported yet</string>
+	<string name="item_valid" formatted="false">You have been given %s</string>
+	
+	<string name="useflash_on">Disable flash</string>
+	<string name="useflash_off">Enable flash</string>
+	<string name="personalDetail_header">Personal Details</string>
+	<string name="personalDetail_content" formatted="false">Username: %s\nCents: %s</string>
+	<string name="scannerInfo_header">Item Details</string>
+	<string name="scannerInfo_content" formatted="false">ID: %s\nName: %s\nWeight: %s\nType: %s\nExchange Amount: %s</string>
+</resources>

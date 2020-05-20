@@ -1,0 +1,14 @@
+<resources>
+
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+	
+	<style name="RVMCheckBoxTheme" parent="@style/Base.Theme.AppCompat">
+		<item name="colorAccent">@color/lightGrey</item>
+		<item name="android:textColorSecondary">@color/colorPrimaryDark</item>
+	</style>
+
+</resources>
