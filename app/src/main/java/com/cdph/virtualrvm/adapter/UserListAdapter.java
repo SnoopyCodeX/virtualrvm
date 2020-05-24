@@ -27,10 +27,10 @@ public class UserListAdapter extends Adapter<UserListAdapter.UserListViewHolder>
 	private List<UserModel> userList;
 	private List<UserModel> userListFull;
 
-	public UserListAdapter(@NonNull List<UserModel> userList)
+	public UserListAdapter(@NonNull List<UserModel> users)
 	{
-		this.userList = userList;
-		this.userListFull = new ArrayList<>(userList);
+		this.userList = users;
+		this.userListFull = new ArrayList<>(users);
 	}
 
 	@NonNull
@@ -47,14 +47,6 @@ public class UserListAdapter extends Adapter<UserListAdapter.UserListViewHolder>
 
 		holder.tv_userLabel.setText("Username");
 		holder.tv_userName.setText(model.userName);
-
-		holder.parent.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v)
-			{
-
-			}
-		});
 
 		holder.btn_delete.setOnClickListener(new View.OnClickListener() {
 			@Override

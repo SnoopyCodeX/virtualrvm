@@ -11,6 +11,8 @@ import java.util.List;
 
 public class VirtualRVMDatabase 
 {
+	private List<ArrayList<String>> items = new ArrayList<>();
+	private List<ArrayList<String>> users = new ArrayList<>();
 	private DatabaseHelper helper;
 	private Context ctx;
 	
@@ -110,16 +112,18 @@ public class VirtualRVMDatabase
 	public List<ArrayList<String>> getAllUserData()
 	{
 		SQLiteDatabase db = helper.getWritableDatabase();
-		Cursor cursor = db.rawQuery("SELECT * FROM tb_users", null);
-		List<ArrayList<String>> users = new ArrayList<>();
+		//Cursor cursor = db.rawQuery("SELECT * FROM tb_users", null);
+		Cursor cursor = db.query(helper.TB_USER, null, null, null, null, null, null);
 		
 		if(cursor == null || cursor.getCount() < 1)
 			return null;
-		cursor.moveToFirst();
+			
+		if(users.size() >= cursor.getCount())
+			users.clear();
 		
-		for(int i = 0; i < cursor.getCount(); )
+		for(int i = 0; i < cursor.getCount(); i++)
 		{
-			cursor.move(i++);
+			cursor.moveToNext();
 			ArrayList<String> userData = new ArrayList<>();
 			userData.add(cursor.getString(cursor.getColumnIndexOrThrow(helper.COL_USER)));
 			userData.add(cursor.getString(cursor.getColumnIndexOrThrow(helper.COL_PASS)));
@@ -135,28 +139,26 @@ public class VirtualRVMDatabase
 	public List<ArrayList<String>> getAllItemData()
 	{
 		SQLiteDatabase db = helper.getWritableDatabase();
-		Cursor cursor = db.rawQuery("SELECT * FROM tb_items", null);
-		List<ArrayList<String>> items = new ArrayList<>();
-
+		//Cursor cursor = db.rawQuery("SELECT * FROM tb_items", null);
+		Cursor cursor = db.query(helper.TB_ITEM, null, null, null, null, null, null);
+		
 		if(cursor == null || cursor.getCount() < 1)
 			return null;
-			
-		//Toast.makeText(ctx, "Items count: " + cursor.getCount(), Toast.LENGTH_SHORT).show();
+		
+		if(items.size() >= cursor.getCount())
+			items.clear();
 
-		if(cursor.moveToFirst())
-			while(!cursor.isAfterLast())
-			{
-				ArrayList<String> itemData = new ArrayList<>();
-				itemData.add(cursor.getString(cursor.getColumnIndexOrThrow(helper.COL_ID)));
-				itemData.add(cursor.getString(cursor.getColumnIndexOrThrow(helper.COL_NAME)));
-				itemData.add(cursor.getString(cursor.getColumnIndexOrThrow(helper.COL_WEIGHT)));
-				itemData.add(cursor.getString(cursor.getColumnIndexOrThrow(helper.COL_TYPE)));
-				itemData.add(cursor.getString(cursor.getColumnIndexOrThrow(helper.COL_AMNT)));
-				items.add(itemData);
-				cursor.moveToNext();
-			}
-
-		//Toast.makeText(ctx, "Items: " + items.size(), Toast.LENGTH_SHORT).show();
+		while(cursor.moveToNext())
+		{
+			ArrayList<String> itemData = new ArrayList<>();
+			itemData.add(cursor.getString(cursor.getColumnIndexOrThrow(helper.COL_ID)));
+			itemData.add(cursor.getString(cursor.getColumnIndexOrThrow(helper.COL_NAME)));
+			itemData.add(cursor.getString(cursor.getColumnIndexOrThrow(helper.COL_WEIGHT)));
+			itemData.add(cursor.getString(cursor.getColumnIndexOrThrow(helper.COL_TYPE)));
+			itemData.add(cursor.getString(cursor.getColumnIndexOrThrow(helper.COL_AMNT)));
+			items.add(itemData);
+		}
+		
 		cursor.close();
 		return items;
 	}

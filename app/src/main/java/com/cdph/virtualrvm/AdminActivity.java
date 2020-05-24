@@ -99,8 +99,9 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
 		List<ArrayList<String>> items = db.getAllItemData();
 		List<ItemModel> itemModels = new ArrayList<>();
 
-		for(ArrayList<String> itemData : items)
+		for(int i = 0; i < items.size(); i++)
 		{
+			ArrayList<String> itemData = items.get(i);
 			String id = itemData.get(0);
 			String name = itemData.get(1);
 			String weight = itemData.get(2);

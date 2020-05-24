@@ -27,10 +27,10 @@ public class ItemListAdapter extends Adapter<ItemListAdapter.ItemListViewHolder>
 	private List<ItemModel> itemList;
 	private List<ItemModel> itemListFull;
 	
-	public ItemListAdapter(@NonNull List<ItemModel> itemList)
+	public ItemListAdapter(@NonNull List<ItemModel> items)
 	{
-		this.itemList = itemList;
-		this.itemListFull = new ArrayList<>(itemList);
+		this.itemList = items;
+		this.itemListFull = new ArrayList<>(items);
 	}
 	
 	@NonNull
@@ -47,15 +47,6 @@ public class ItemListAdapter extends Adapter<ItemListAdapter.ItemListViewHolder>
 		
 		holder.tv_itemLabel.setText("Item Name");
 		holder.tv_itemName.setText(model.itemName);
-		holder.tv_itemName.setTag(model.itemId);
-		
-		holder.parent.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v)
-			{
-				
-			}
-		});
 		
 		holder.btn_delete.setOnClickListener(new View.OnClickListener() {
 			@Override
