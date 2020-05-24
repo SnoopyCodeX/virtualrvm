@@ -141,7 +141,7 @@ public class VirtualRVMDatabase
 		if(cursor == null || cursor.getCount() < 1)
 			return null;
 			
-		Toast.makeText(ctx, "Items count: " + cursor.getCount(), Toast.LENGTH_SHORT).show();
+		//Toast.makeText(ctx, "Items count: " + cursor.getCount(), Toast.LENGTH_SHORT).show();
 
 		if(cursor.moveToFirst())
 			while(!cursor.isAfterLast())
@@ -156,7 +156,7 @@ public class VirtualRVMDatabase
 				cursor.moveToNext();
 			}
 
-		Toast.makeText(ctx, "Items: " + items.size(), Toast.LENGTH_SHORT).show();
+		//Toast.makeText(ctx, "Items: " + items.size(), Toast.LENGTH_SHORT).show();
 		cursor.close();
 		return items;
 	}

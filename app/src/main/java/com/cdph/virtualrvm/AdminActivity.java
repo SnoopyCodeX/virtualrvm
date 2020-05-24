@@ -56,43 +56,13 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
         switch(item.getItemId())
         {
             case R.id.action_items:
-				List<ArrayList<String>> items = db.getAllItemData();
-				List<ItemModel> itemModels = new ArrayList<>();
-				
-				for(ArrayList<String> itemData : items)
-				{
-					String id = itemData.get(0);
-					String name = itemData.get(1);
-					String weight = itemData.get(2);
-					String type = itemData.get(3);
-					String worth = itemData.get(4);
-					
-					itemModels.add(ItemModel.newItem(id, name, weight, type, worth));
-				}
-				
-				Toast.makeText(this, "Models: " + itemModels.size(), Toast.LENGTH_LONG).show();
-				ItemListAdapter itemAdapter = new ItemListAdapter(itemModels);
-				contentList.setAdapter(itemAdapter);
+				loadAllItemData();
             	header.setText(R.string.admin_items_header);
 				ret = true;
             break;
 			
 			case R.id.action_users:
-				List<ArrayList<String>> users = db.getAllUserData();
-				List<UserModel> userModels = new ArrayList<>();
-				
-				for(ArrayList<String> userData : users)
-				{
-					String name = userData.get(0);
-					String pass = userData.get(1);
-					String cent = userData.get(2);
-					String rank = userData.get(3);
-					
-					userModels.add(UserModel.newUser(name, pass, cent, rank));
-				}
-				
-				UserListAdapter userAdapter = new UserListAdapter(userModels);
-				contentList.setAdapter(userAdapter);
+				loadAllUserData();
 				header.setText(R.string.admin_users_header);
 				ret = true;
 			break;
@@ -120,5 +90,46 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
 		
 		header = findViewById(R.id.admin_list_header);
 		header.setTypeface(flatFont, Typeface.BOLD);
+		
+		bottomNav.setSelectedItemId(R.id.action_items);
     }
+	
+	private void loadAllItemData()
+	{
+		List<ArrayList<String>> items = db.getAllItemData();
+		List<ItemModel> itemModels = new ArrayList<>();
+
+		for(ArrayList<String> itemData : items)
+		{
+			String id = itemData.get(0);
+			String name = itemData.get(1);
+			String weight = itemData.get(2);
+			String type = itemData.get(3);
+			String worth = itemData.get(4);
+
+			itemModels.add(ItemModel.newItem(id, name, weight, type, worth));
+		}
+		
+		ItemListAdapter itemAdapter = new ItemListAdapter(itemModels);
+		contentList.setAdapter(itemAdapter);
+	}
+	
+	private void loadAllUserData()
+	{
+		List<ArrayList<String>> users = db.getAllUserData();
+		List<UserModel> userModels = new ArrayList<>();
+
+		for(ArrayList<String> userData : users)
+		{
+			String name = userData.get(0);
+			String pass = userData.get(1);
+			String cent = userData.get(2);
+			String rank = userData.get(3);
+
+			userModels.add(UserModel.newUser(name, pass, cent, rank));
+		}
+
+		UserListAdapter userAdapter = new UserListAdapter(userModels);
+		contentList.setAdapter(userAdapter);
+	}
 }
