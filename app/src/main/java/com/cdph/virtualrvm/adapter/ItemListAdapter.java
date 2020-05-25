@@ -24,13 +24,13 @@ import java.util.List;
 
 public class ItemListAdapter extends Adapter<ItemListAdapter.ItemListViewHolder> implements Filterable
 {
-	private List<ItemModel> itemList = new ArrayList<>();
-	private List<ItemModel> itemListFull = new ArrayList<>();
+	private List<ItemModel> itemList;
+	private List<ItemModel> itemListFull;
 	
 	public ItemListAdapter(@NonNull List<ItemModel> items)
 	{
-		itemList.addAll(items);
-		itemListFull.addAll(items);
+		this.itemList = items;
+		this.itemListFull = new ArrayList<>(items);
 	}
 	
 	@NonNull

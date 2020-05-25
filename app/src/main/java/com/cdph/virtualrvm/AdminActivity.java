@@ -2,6 +2,8 @@ package com.cdph.virtualrvm;
 
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -30,6 +32,8 @@ import android.util.Log;
 public class AdminActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener
 {
 	private VirtualRVMDatabase db;
+	private ItemListAdapter itemAdapter;
+	private UserListAdapter userAdapter;
     private BottomNavigationView bottomNav;
 	private FloatingActionButton fabAdd;
 	private RecyclerView contentList;
@@ -75,7 +79,6 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
 	@Override
 	public void onBackPressed() 
 	{
-		super.onBackPressed();
 		finish();
 	}
     
@@ -91,6 +94,27 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
 		
 		header = findViewById(R.id.admin_list_header);
 		header.setTypeface(flatFont, Typeface.BOLD);
+		
+		searchView = findViewById(R.id.content_list_searchView);
+		searchView.addTextChangedListener(new TextWatcher() {
+			@Override
+			public void beforeTextChanged(CharSequence cs, int p1, int p2, int p3)
+			{}
+			
+			@Override
+			public void afterTextChanged(Editable e)
+			{}
+			
+			@Override
+			public void onTextChanged(CharSequence cs, int p1, int p2, int p3)
+			{
+				if(itemAdapter != null)
+					itemAdapter.getFilter().filter(cs);
+					
+				if(userAdapter != null)
+					userAdapter.getFilter().filter(cs);
+			}
+		});
 		
 		bottomNav.setSelectedItemId(R.id.action_items);
     }
@@ -111,7 +135,8 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
 			itemModels.add(ItemModel.newItem(id, name, weight, type, worth));
 		}
 		
-		ItemListAdapter itemAdapter = new ItemListAdapter(itemModels);
+		itemAdapter = new ItemListAdapter(itemModels);
+		userAdapter = null;
 		contentList.setAdapter(itemAdapter);
 	}
 	
@@ -130,7 +155,8 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
 			userModels.add(UserModel.newUser(name, pass, cent, rank));
 		}
 
-		UserListAdapter userAdapter = new UserListAdapter(userModels);
+		userAdapter = new UserListAdapter(userModels);
+		itemAdapter = null;
 		contentList.setAdapter(userAdapter);
 	}
 }

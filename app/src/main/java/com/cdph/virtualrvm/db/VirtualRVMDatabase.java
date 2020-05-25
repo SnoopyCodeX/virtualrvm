@@ -8,7 +8,6 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
-import android.util.Log;
 
 public class VirtualRVMDatabase 
 {
@@ -140,7 +139,6 @@ public class VirtualRVMDatabase
 		if(cursor == null || cursor.getCount() < 1)
 			return null;
 
-		cursor.moveToFirst();
 		while(cursor.moveToNext())
 		{
 			ArrayList<String> itemData = new ArrayList<>();
