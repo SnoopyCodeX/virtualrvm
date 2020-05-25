@@ -2,11 +2,11 @@ package com.cdph.virtualrvm.model;
 
 public final class ItemModel 
 {
-    public static String itemId;
-	public static String itemName;
-	public static String itemWeight;
-	public static String itemType;
-	public static String itemWorth;
+    public String itemId;
+	public String itemName;
+	public String itemWeight;
+	public String itemType;
+	public String itemWorth;
 	
 	private ItemModel()
 	{}

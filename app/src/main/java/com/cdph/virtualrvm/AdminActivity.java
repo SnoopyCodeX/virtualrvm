@@ -25,6 +25,7 @@ import com.cdph.virtualrvm.db.VirtualRVMDatabase;
 import com.cdph.virtualrvm.model.ItemModel;
 import com.cdph.virtualrvm.model.UserModel;
 import com.cdph.virtualrvm.util.Constants;
+import android.util.Log;
 
 public class AdminActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener
 {
@@ -98,16 +99,15 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
 	{
 		List<ArrayList<String>> items = db.getAllItemData();
 		List<ItemModel> itemModels = new ArrayList<>();
-
-		for(int i = 0; i < items.size(); i++)
+		
+		for(ArrayList<String> itemData : items)
 		{
-			ArrayList<String> itemData = items.get(i);
 			String id = itemData.get(0);
 			String name = itemData.get(1);
 			String weight = itemData.get(2);
 			String type = itemData.get(3);
 			String worth = itemData.get(4);
-
+			
 			itemModels.add(ItemModel.newItem(id, name, weight, type, worth));
 		}
 		

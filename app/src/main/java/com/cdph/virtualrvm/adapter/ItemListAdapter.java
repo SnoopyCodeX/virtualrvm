@@ -24,13 +24,13 @@ import java.util.List;
 
 public class ItemListAdapter extends Adapter<ItemListAdapter.ItemListViewHolder> implements Filterable
 {
-	private List<ItemModel> itemList;
-	private List<ItemModel> itemListFull;
+	private List<ItemModel> itemList = new ArrayList<>();
+	private List<ItemModel> itemListFull = new ArrayList<>();
 	
 	public ItemListAdapter(@NonNull List<ItemModel> items)
 	{
-		this.itemList = items;
-		this.itemListFull = new ArrayList<>(items);
+		itemList.addAll(items);
+		itemListFull.addAll(items);
 	}
 	
 	@NonNull
@@ -43,7 +43,7 @@ public class ItemListAdapter extends Adapter<ItemListAdapter.ItemListViewHolder>
 	@Override
 	public void onBindViewHolder(@NonNull final ItemListAdapter.ItemListViewHolder holder, int position)
 	{
-		final ItemModel model = itemList.get(position);
+		ItemModel model = itemList.get(position);
 		
 		holder.tv_itemLabel.setText("Item Name");
 		holder.tv_itemName.setText(model.itemName);

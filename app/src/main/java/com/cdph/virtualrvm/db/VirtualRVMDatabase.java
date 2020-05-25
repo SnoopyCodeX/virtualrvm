@@ -8,11 +8,10 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
+import android.util.Log;
 
 public class VirtualRVMDatabase 
 {
-	private List<ArrayList<String>> items = new ArrayList<>();
-	private List<ArrayList<String>> users = new ArrayList<>();
 	private DatabaseHelper helper;
 	private Context ctx;
 	
@@ -112,18 +111,14 @@ public class VirtualRVMDatabase
 	public List<ArrayList<String>> getAllUserData()
 	{
 		SQLiteDatabase db = helper.getWritableDatabase();
-		//Cursor cursor = db.rawQuery("SELECT * FROM tb_users", null);
 		Cursor cursor = db.query(helper.TB_USER, null, null, null, null, null, null);
+		List<ArrayList<String>> users = new ArrayList<>();
 		
 		if(cursor == null || cursor.getCount() < 1)
 			return null;
-			
-		if(users.size() >= cursor.getCount())
-			users.clear();
 		
-		for(int i = 0; i < cursor.getCount(); i++)
+		while(cursor.moveToNext())
 		{
-			cursor.moveToNext();
 			ArrayList<String> userData = new ArrayList<>();
 			userData.add(cursor.getString(cursor.getColumnIndexOrThrow(helper.COL_USER)));
 			userData.add(cursor.getString(cursor.getColumnIndexOrThrow(helper.COL_PASS)));
@@ -139,15 +134,13 @@ public class VirtualRVMDatabase
 	public List<ArrayList<String>> getAllItemData()
 	{
 		SQLiteDatabase db = helper.getWritableDatabase();
-		//Cursor cursor = db.rawQuery("SELECT * FROM tb_items", null);
 		Cursor cursor = db.query(helper.TB_ITEM, null, null, null, null, null, null);
+		List<ArrayList<String>> items = new ArrayList<>();
 		
 		if(cursor == null || cursor.getCount() < 1)
 			return null;
-		
-		if(items.size() >= cursor.getCount())
-			items.clear();
 
+		cursor.moveToFirst();
 		while(cursor.moveToNext())
 		{
 			ArrayList<String> itemData = new ArrayList<>();
