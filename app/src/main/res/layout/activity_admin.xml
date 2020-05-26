@@ -55,11 +55,13 @@
 				android:layout_width="match_parent"
 				android:layout_height="match_parent"
 				android:layout_weight="1"
+				android:orientation="vertical"
 				android:background="@drawable/content_list_bg">
 				
 				<LinearLayout
 					android:layout_width="match_parent"
-					android:layout_height="120dp"
+					android:layout_height="110dp"
+					android:layout_weight="1"
 					android:orientation="vertical"
 					android:background="@color/colorPrimary">
 					
@@ -67,12 +69,12 @@
 						android:id="@+id/content_list_searchView"
 						android:layout_width="match_parent"
 						android:layout_height="match_parent"
-						android:layout_weight="1"
 						android:layout_gravity="center"
-						android:textColor="@color/lightGrey"
+						android:textColor="@color/tealishGreen"
+						android:textColorHint="@color/fadedTealishGreen"
 						android:padding="10dp"
 						android:layout_margin="5dp"
-						android:background="@drawable/textinput_selector"/>
+						android:background="@drawable/searchinput_active"/>
 					
 					<View
 						android:layout_height="1dp"
@@ -84,6 +86,7 @@
 				
 				<android.support.v7.widget.RecyclerView
 					android:id="@+id/content_list"
+					android:layout_weight="1"
 					android:layout_width="match_parent"
 					android:layout_height="match_parent"/>
 				

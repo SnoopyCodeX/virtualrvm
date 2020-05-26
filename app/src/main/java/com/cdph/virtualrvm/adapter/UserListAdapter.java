@@ -16,6 +16,9 @@ import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.Adapter;
 import android.support.v7.widget.RecyclerView.ViewHolder;
+import cn.pedant.SweetAlert.SweetAlertDialog;
+import com.cdph.virtualrvm.AdminActivity;
+import com.cdph.virtualrvm.db.VirtualRVMDatabase;
 import com.cdph.virtualrvm.model.UserModel;
 import com.cdph.virtualrvm.R;
 
@@ -24,6 +27,7 @@ import java.util.List;
 
 public class UserListAdapter extends Adapter<UserListAdapter.UserListViewHolder> implements Filterable
 {
+	private AdminActivity activity;
 	private List<UserModel> userList;
 	private List<UserModel> userListFull;
 
@@ -31,6 +35,11 @@ public class UserListAdapter extends Adapter<UserListAdapter.UserListViewHolder>
 	{
 		this.userList = users;
 		this.userListFull = new ArrayList<>(users);
+	}
+	
+	public void setActivity(AdminActivity activity)
+	{
+		this.activity = activity;
 	}
 
 	@NonNull
@@ -43,6 +52,7 @@ public class UserListAdapter extends Adapter<UserListAdapter.UserListViewHolder>
 	@Override
 	public void onBindViewHolder(@NonNull final UserListAdapter.UserListViewHolder holder, int position)
 	{
+		final VirtualRVMDatabase db = new VirtualRVMDatabase(holder.context);
 		final UserModel model = userList.get(position);
 
 		holder.tv_userLabel.setText("Username");
@@ -52,7 +62,57 @@ public class UserListAdapter extends Adapter<UserListAdapter.UserListViewHolder>
 			@Override
 			public void onClick(View v)
 			{
+				new SweetAlertDialog(holder.context, SweetAlertDialog.WARNING_TYPE)
+					.setTitleText("Confirm Deletion")
+					.setContentText("Are you sure you want to delete this user?")
+					.setCancelText("Cancel")
+					.setConfirmText("Delete")
+					.setCancelClickListener(new SweetAlertDialog.OnSweetClickListener() {
+						@Override
+						public void onClick(SweetAlertDialog dlg)
+						{
+							dlg.dismissWithAnimation();
+						}
+					})
+					.setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+						@Override
+						public void onClick(SweetAlertDialog dialog)
+						{
+							dialog.dismissWithAnimation();
+							if(db.deleteUserData(model.userName) == 1)
+							{
+								SweetAlertDialog dlg = new SweetAlertDialog(holder.context, SweetAlertDialog.SUCCESS_TYPE);
+								dlg.setTitleText("Delete Success");
+								dlg.setContentText("User has been deleted successfully!");
+								dlg.setConfirmText("Okay");
+								dlg.setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+									@Override
+									public void onClick(SweetAlertDialog dlg)
+									{
+										dlg.dismissWithAnimation();
+									}
+								});
+								dlg.show();
+								
+								activity.loadAllUserData();
+								return;
+							}
 
+							SweetAlertDialog dlg = new SweetAlertDialog(holder.context, SweetAlertDialog.SUCCESS_TYPE);
+							dlg.setTitleText("Delete Failed");
+							dlg.setContentText("User deletion has failed!");
+							dlg.setConfirmText("Okay");
+							dlg.setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+								@Override
+								public void onClick(SweetAlertDialog dlg)
+								{
+									dlg.dismissWithAnimation();
+								}
+							});
+							dlg.show();
+						}
+					})
+					.show();
 			}
 		});
 

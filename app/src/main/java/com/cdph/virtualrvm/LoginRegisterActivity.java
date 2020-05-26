@@ -13,11 +13,11 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import android.support.v7.app.AppCompatActivity;
 import com.cdph.virtualrvm.db.VirtualRVMDatabase;
 import com.cdph.virtualrvm.util.Constants;
+import cn.pedant.SweetAlert.SweetAlertDialog;
 
 public class LoginRegisterActivity extends AppCompatActivity implements View.OnClickListener, CompoundButton.OnCheckedChangeListener
 {
@@ -158,19 +158,19 @@ public class LoginRegisterActivity extends AppCompatActivity implements View.OnC
 			return;
 		}
 		
-		if(!username.isEmpty() && password.isEmpty())
+		else if(!username.isEmpty() && password.isEmpty())
 		{
 			input_signin_password.setError(getString(R.string.empty_field));
 			return;
 		}
 		
-		if(!username.isEmpty() && password.length() < 8)
+		else if(!username.isEmpty() && password.length() < 8)
 		{
 			input_signin_password.setError(getString(R.string.password_too_short));
 			return;
 		}
 		
-		if(username.isEmpty() && password.isEmpty())
+		else if(username.isEmpty() && password.isEmpty())
 		{
 			input_signin_username.setError(getString(R.string.empty_field));
 			input_signin_password.setError(getString(R.string.empty_field));
@@ -212,19 +212,19 @@ public class LoginRegisterActivity extends AppCompatActivity implements View.OnC
 			return;
 		}
 
-		if(!username.isEmpty() && password.isEmpty())
+		else if(!username.isEmpty() && password.isEmpty())
 		{
 			input_signup_password.setError(getString(R.string.empty_field));
 			return;
 		}
 
-		if(!username.isEmpty() && password.length() < 8)
+		else if(!username.isEmpty() && password.length() < 8)
 		{
 			input_signup_password.setError(getString(R.string.password_too_short));
 			return;
 		}
 
-		if(username.isEmpty() && password.isEmpty())
+		else if(username.isEmpty() && password.isEmpty())
 		{
 			input_signup_username.setError(getString(R.string.empty_field));
 			input_signup_password.setError(getString(R.string.empty_field));
@@ -234,12 +234,34 @@ public class LoginRegisterActivity extends AppCompatActivity implements View.OnC
 		if(db.getUserData(username) != null)
 		{
 			input_signup_username.setError(getString(R.string.user_exists));
-			Toast.makeText(this, getString(R.string.user_exists), Toast.LENGTH_LONG).show();
+			
+			new SweetAlertDialog(this, SweetAlertDialog.ERROR_TYPE)
+				.setContentText(getString(R.string.user_exists))
+				.setTitleText("Register Failed")
+				.setConfirmText("Okay")
+				.setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+					@Override
+					public void onClick(SweetAlertDialog dlg)
+					{
+						dlg.dismissWithAnimation();
+					}
+				}).show();
+			
 			return;
 		}
 		
 		db.insertUserData(username, Base64.encodeToString(password.getBytes(), Base64.DEFAULT), 0, "0.0¢");
-		Toast.makeText(this, getString(R.string.register_success), Toast.LENGTH_LONG).show();
+		new SweetAlertDialog(this, SweetAlertDialog.SUCCESS_TYPE)
+			.setContentText(getString(R.string.register_success))
+			.setTitleText("Register Success")
+			.setConfirmText("Okay")
+			.setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+				@Override
+				public void onClick(SweetAlertDialog dlg)
+				{
+					dlg.dismissWithAnimation();
+				}
+			}).show();
 	}
 	
 	private void initData()

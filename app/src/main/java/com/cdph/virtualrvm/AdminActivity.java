@@ -63,12 +63,14 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
             case R.id.action_items:
 				loadAllItemData();
             	header.setText(R.string.admin_items_header);
+				searchView.setHint("Search items...");
 				ret = true;
             break;
 			
 			case R.id.action_users:
 				loadAllUserData();
 				header.setText(R.string.admin_users_header);
+				searchView.setHint("Search username...");
 				ret = true;
 			break;
         }
@@ -86,6 +88,7 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
     {
 		db = new VirtualRVMDatabase(this);
 		flatFont = Typeface.createFromAsset(getAssets(), "fonts/quicksand_light.ttf");
+		searchView = findViewById(R.id.content_list_searchView);
         bottomNav = findViewById(R.id.bottom_navigation);
         bottomNav.setOnNavigationItemSelectedListener(this);
 		
@@ -94,8 +97,8 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
 		
 		header = findViewById(R.id.admin_list_header);
 		header.setTypeface(flatFont, Typeface.BOLD);
+		bottomNav.setSelectedItemId(R.id.action_items);
 		
-		searchView = findViewById(R.id.content_list_searchView);
 		searchView.addTextChangedListener(new TextWatcher() {
 			@Override
 			public void beforeTextChanged(CharSequence cs, int p1, int p2, int p3)
@@ -115,11 +118,10 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
 					userAdapter.getFilter().filter(cs);
 			}
 		});
-		
-		bottomNav.setSelectedItemId(R.id.action_items);
+		contentList.requestFocus();
     }
 	
-	private void loadAllItemData()
+	public void loadAllItemData()
 	{
 		List<ArrayList<String>> items = db.getAllItemData();
 		List<ItemModel> itemModels = new ArrayList<>();
@@ -136,11 +138,13 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
 		}
 		
 		itemAdapter = new ItemListAdapter(itemModels);
+		itemAdapter.setActivity(this);
 		userAdapter = null;
 		contentList.setAdapter(itemAdapter);
+		contentList.requestFocus();
 	}
 	
-	private void loadAllUserData()
+	public void loadAllUserData()
 	{
 		List<ArrayList<String>> users = db.getAllUserData();
 		List<UserModel> userModels = new ArrayList<>();
@@ -156,7 +160,9 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
 		}
 
 		userAdapter = new UserListAdapter(userModels);
+		userAdapter.setActivity(this);
 		itemAdapter = null;
-		contentList.setAdapter(userAdapter);
+ 		contentList.setAdapter(userAdapter);
+		contentList.requestFocus();
 	}
 }

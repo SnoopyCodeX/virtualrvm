@@ -16,6 +16,9 @@ import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.Adapter;
 import android.support.v7.widget.RecyclerView.ViewHolder;
+import cn.pedant.SweetAlert.SweetAlertDialog;
+import com.cdph.virtualrvm.AdminActivity;
+import com.cdph.virtualrvm.db.VirtualRVMDatabase;
 import com.cdph.virtualrvm.model.ItemModel;
 import com.cdph.virtualrvm.R;
 
@@ -24,6 +27,7 @@ import java.util.List;
 
 public class ItemListAdapter extends Adapter<ItemListAdapter.ItemListViewHolder> implements Filterable
 {
+	private AdminActivity activity;
 	private List<ItemModel> itemList;
 	private List<ItemModel> itemListFull;
 	
@@ -40,10 +44,16 @@ public class ItemListAdapter extends Adapter<ItemListAdapter.ItemListViewHolder>
 		return (new ItemListAdapter.ItemListViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.content_list_item, parent, false)));
 	}
 	
+	public void setActivity(AdminActivity activity)
+	{
+		this.activity = activity;
+	}
+	
 	@Override
 	public void onBindViewHolder(@NonNull final ItemListAdapter.ItemListViewHolder holder, int position)
 	{
-		ItemModel model = itemList.get(position);
+		final VirtualRVMDatabase db = new VirtualRVMDatabase(holder.context);
+		final ItemModel model = itemList.get(position);
 		
 		holder.tv_itemLabel.setText("Item Name");
 		holder.tv_itemName.setText(model.itemName);
@@ -52,7 +62,57 @@ public class ItemListAdapter extends Adapter<ItemListAdapter.ItemListViewHolder>
 			@Override
 			public void onClick(View v)
 			{
-				
+				new SweetAlertDialog(holder.context, SweetAlertDialog.WARNING_TYPE)
+					.setTitleText("Confirm Deletion")
+					.setContentText("Are you sure you want to delete this item?")
+					.setCancelText("Cancel")
+					.setConfirmText("Delete")
+					.setCancelClickListener(new SweetAlertDialog.OnSweetClickListener() {
+						@Override
+						public void onClick(SweetAlertDialog dlg)
+						{
+							dlg.dismissWithAnimation();
+						}
+					})
+					.setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+						@Override
+						public void onClick(SweetAlertDialog dialog)
+						{
+							dialog.dismissWithAnimation();
+							if(db.deleteItemData(model.itemId) == 1)
+							{
+								SweetAlertDialog dlg = new SweetAlertDialog(holder.context, SweetAlertDialog.SUCCESS_TYPE);
+								dlg.setTitleText("Delete Success");
+								dlg.setContentText("Item has been deleted successfully!");
+								dlg.setConfirmText("Okay");
+								dlg.setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+									@Override
+									public void onClick(SweetAlertDialog dlg)
+									{
+										dlg.dismissWithAnimation();
+									}
+								});
+								dlg.show();
+								
+								activity.loadAllItemData();
+								return;
+							}
+							
+							SweetAlertDialog dlg = new SweetAlertDialog(holder.context, SweetAlertDialog.SUCCESS_TYPE);
+							dlg.setTitleText("Delete Failed");
+							dlg.setContentText("Item deletion has failed!");
+							dlg.setConfirmText("Okay");
+							dlg.setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+								@Override
+								public void onClick(SweetAlertDialog dlg)
+								{
+									dlg.dismissWithAnimation();
+								}
+							});
+							dlg.show();
+						}
+					})
+					.show();
 			}
 		});
 		
