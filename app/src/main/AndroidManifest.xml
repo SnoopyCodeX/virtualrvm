@@ -29,7 +29,8 @@
 			android:name=".MainActivity"/>
 		
 		<activity
-			android:name=".AdminActivity"/>
+			android:name=".AdminActivity"
+			android:label="@string/app_admin"/>
         
       <meta-data
           android:name="android.max_aspect"

@@ -1,7 +1,6 @@
 package com.cdph.virtualrvm;
 
 import android.Manifest;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -15,14 +14,13 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
 import java.util.ArrayList;
 
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import me.dm7.barcodescanner.zbar.Result;
 import me.dm7.barcodescanner.zbar.ZBarScannerView;
+import cn.pedant.SweetAlert.SweetAlertDialog;
 import com.cdph.virtualrvm.db.VirtualRVMDatabase;
 import com.cdph.virtualrvm.util.Constants;
 
@@ -161,16 +159,35 @@ public class MainActivity extends AppCompatActivity implements ZBarScannerView.R
 		if(allGranted)
 			startScanner();
 		else
-		{
-			Toast.makeText(this, "Permissions needs to be granted!", Toast.LENGTH_LONG).show();
-			finish();
-		}
+			new SweetAlertDialog(this, SweetAlertDialog.WARNING_TYPE)
+				.setTitleText("Warning")
+				.setContentText("App needs all the permissions to be granted!")
+				.setConfirmText("Grant Permissions")
+				.setCancelText("Nope")
+				.setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+					@Override
+					public void onClick(SweetAlertDialog dlg)
+					{
+						dlg.dismissWithAnimation();
+						requestPermissions();
+					}
+				})
+				.setCancelClickListener(new SweetAlertDialog.OnSweetClickListener() {
+					@Override
+					public void onClick(SweetAlertDialog dlg)
+					{
+						dlg.dismissWithAnimation();
+						finish();
+					}
+				})
+				.show();
 	}
 	
 	@Override
 	public void handleResult(Result result)
 	{
 		String[] itemData = db.getItemData(result.getContents());
+		SweetAlertDialog dlg = new SweetAlertDialog(this);
 		
 		if(itemData != null)
 		{
@@ -187,11 +204,18 @@ public class MainActivity extends AppCompatActivity implements ZBarScannerView.R
 			db.updateUserData("user_cent", ((user_cent + item_cent) >= 1 ? "₱" : "") + String.valueOf(user_cent + item_cent) + ((user_cent + item_cent) < 1 ? "¢" : ""), userData[0]);
 			updatePersonalDetail(((user_cent + item_cent) >= 1 ? "₱" : "") + String.valueOf(user_cent + item_cent) + ((user_cent + item_cent) < 1 ? "¢" : ""));
 			
-			Toast.makeText(this, Html.fromHtml(String.format(getString(R.string.item_valid), amnt)), Toast.LENGTH_LONG).show();
+			dlg.setTitleText("Congratulations")
+				.setContentText(Html.fromHtml(String.format(getString(R.string.item_valid), amnt)).toString())
+				.setConfirmText("Thank you")
+				.changeAlertType(SweetAlertDialog.SUCCESS_TYPE);
 		}
 		else
-			Toast.makeText(this, getString(R.string.item_invalid), Toast.LENGTH_LONG).show();
+			dlg.setTitleText("Try Again")
+				.setContentText(getString(R.string.item_invalid))
+				.setConfirmText("Okay")
+				.changeAlertType(SweetAlertDialog.ERROR_TYPE);
 		
+		dlg.show();
 		Handler resetHandler = new Handler();
 		resetHandler.postDelayed(new Runnable() {
 			@Override
@@ -221,32 +245,32 @@ public class MainActivity extends AppCompatActivity implements ZBarScannerView.R
 		switch(view.getId())
 		{
 			case R.id.main_signout_btn:
-				final AlertDialog dlg = new AlertDialog.Builder(this).create();
-				dlg.setIcon(android.R.drawable.ic_dialog_alert);
-				dlg.setMessage("Do you really want to sign out?");
-				dlg.setTitle("Confirm");
-				dlg.setCancelable(false);
-				dlg.setCanceledOnTouchOutside(false);
-				dlg.setButton(AlertDialog.BUTTON1, "Yes", new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface di, int which)
-					{
-						preference.edit().putString(Constants.KEY_USERNAME, "").commit();
-						preference.edit().putBoolean(Constants.KEY_REMEMBER, false).commit();
-						preference.edit().putString(Constants.KEY_CENTS, "").commit();
-						startActivity(new Intent(MainActivity.this, LoginRegisterActivity.class));
-						finish();
-					}
-				});
-				dlg.setButton(AlertDialog.BUTTON2, "No", new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface di, int which)
-					{
-						dlg.dismiss();
-					}
-				});
-				dlg.show();
+				new SweetAlertDialog(this, SweetAlertDialog.WARNING_TYPE)
+					.setTitleText("Confirm Sign Out")
+					.setContentText("Are you sure you want to sign out?")
+					.setCancelText("Cancel")
+					.setConfirmText("Sign Out")
+					.setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+						@Override
+						public void onClick(SweetAlertDialog dlg)
+						{
+							dlg.dismissWithAnimation();
+							signout();
+						}
+					}).show();
 			break;
 		}
+	}
+	
+	private void signout()
+	{
+		SharedPreferences.Editor edit = preference.edit();
+		edit.putString(Constants.KEY_CENTS, "")
+			.putString(Constants.KEY_RANK, "")
+			.putBoolean(Constants.KEY_REMEMBER, false)
+			.putString(Constants.KEY_USERNAME, "").commit();
+
+		startActivity(new Intent(this, LoginRegisterActivity.class));
+		finish();
 	}
 }

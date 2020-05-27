@@ -1,9 +1,14 @@
 package com.cdph.virtualrvm;
 
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -21,16 +26,17 @@ import android.support.v7.widget.Toolbar;
 import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.FloatingActionButton;
 
+import cn.pedant.SweetAlert.SweetAlertDialog;
 import com.cdph.virtualrvm.adapter.ItemListAdapter;
 import com.cdph.virtualrvm.adapter.UserListAdapter;
 import com.cdph.virtualrvm.db.VirtualRVMDatabase;
 import com.cdph.virtualrvm.model.ItemModel;
 import com.cdph.virtualrvm.model.UserModel;
 import com.cdph.virtualrvm.util.Constants;
-import android.util.Log;
 
 public class AdminActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener
 {
+	private SharedPreferences pref;
 	private VirtualRVMDatabase db;
 	private ItemListAdapter itemAdapter;
 	private UserListAdapter userAdapter;
@@ -83,10 +89,43 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
 	{
 		finish();
 	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) 
+	{
+		getMenuInflater().inflate(R.menu.admin_menu, menu);
+		return super.onCreateOptionsMenu(menu);
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) 
+	{
+		switch(item.getItemId())
+		{
+			case R.id.admin_signout:
+				new SweetAlertDialog(this, SweetAlertDialog.WARNING_TYPE)
+					.setTitleText("Confirm Sign Out")
+					.setContentText("Are you sure you want to sign out?")
+					.setCancelText("Cancel")
+					.setConfirmText("Sign Out")
+					.setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+						@Override
+						public void onClick(SweetAlertDialog dlg)
+						{
+							dlg.dismissWithAnimation();
+							signout();
+						}
+					}).show();
+			break;
+		}
+		
+		return false;
+	}
     
     private void initViews()
     {
 		db = new VirtualRVMDatabase(this);
+		pref = PreferenceManager.getDefaultSharedPreferences(this);
 		flatFont = Typeface.createFromAsset(getAssets(), "fonts/quicksand_light.ttf");
 		searchView = findViewById(R.id.content_list_searchView);
         bottomNav = findViewById(R.id.bottom_navigation);
@@ -156,7 +195,8 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
 			String cent = userData.get(2);
 			String rank = userData.get(3);
 
-			userModels.add(UserModel.newUser(name, pass, cent, rank));
+			if(!name.equals(pref.getString(Constants.KEY_USERNAME, "")))
+				userModels.add(UserModel.newUser(name, pass, cent, rank));
 		}
 
 		userAdapter = new UserListAdapter(userModels);
@@ -164,5 +204,17 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
 		itemAdapter = null;
  		contentList.setAdapter(userAdapter);
 		contentList.requestFocus();
+	}
+	
+	private void signout()
+	{
+		SharedPreferences.Editor edit = pref.edit();
+		edit.putString(Constants.KEY_CENTS, "")
+			.putString(Constants.KEY_RANK, "")
+			.putBoolean(Constants.KEY_REMEMBER, false)
+			.putString(Constants.KEY_USERNAME, "").commit();
+
+		startActivity(new Intent(this, LoginRegisterActivity.class));
+		finish();
 	}
 }
