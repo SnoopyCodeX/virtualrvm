@@ -2,6 +2,7 @@ package com.cdph.virtualrvm.adapter;
 
 import android.content.Context;
 import android.graphics.Typeface;
+import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -57,6 +58,9 @@ public class ItemListAdapter extends Adapter<ItemListAdapter.ItemListViewHolder>
 		
 		holder.tv_itemLabel.setText("Item Name");
 		holder.tv_itemName.setText(model.itemName);
+		
+		String type = "<font color=\"#33B5E5\">%s %s</font>";
+		holder.tv_itemType.setText(Html.fromHtml(String.format(type, model.itemWeight, firstLetterToUpperCase(model.itemType))));
 		
 		holder.btn_delete.setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -136,13 +140,18 @@ public class ItemListAdapter extends Adapter<ItemListAdapter.ItemListViewHolder>
 	{
 		return filter;
 	}
+	
+	private String firstLetterToUpperCase(String text)
+	{
+		return (String.valueOf(text.charAt(0)).toUpperCase()) + text.substring(1, text.length());
+	}
     
 	public class ItemListViewHolder extends ViewHolder
 	{
 		public Context context;
 		public ImageButton btn_edit, btn_delete;
 		public LinearLayout parent;
-		public TextView tv_itemName, tv_itemLabel;
+		public TextView tv_itemName, tv_itemLabel, tv_itemType;
 		
 		public ItemListViewHolder(View view)
 		{
@@ -154,6 +163,7 @@ public class ItemListAdapter extends Adapter<ItemListAdapter.ItemListViewHolder>
 			btn_delete = view.findViewById(R.id.content_list_delete);
 			tv_itemLabel = view.findViewById(R.id.content_list_label);
 			tv_itemName = view.findViewById(R.id.content_list_name);
+			tv_itemType = view.findViewById(R.id.content_list_rank);
 		}
 	}
 	
@@ -168,7 +178,7 @@ public class ItemListAdapter extends Adapter<ItemListAdapter.ItemListViewHolder>
 			{
 				String filterPattern = constraint.toString().toLowerCase().trim();
 				for(ItemModel model : itemListFull)
-					if(model.itemName.contains(filterPattern))
+					if(model.itemName.toLowerCase().contains(filterPattern))
 						filteredList.add(model);
 			}
 			else

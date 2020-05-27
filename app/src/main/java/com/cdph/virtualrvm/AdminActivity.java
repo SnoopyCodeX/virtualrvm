@@ -34,7 +34,7 @@ import com.cdph.virtualrvm.model.ItemModel;
 import com.cdph.virtualrvm.model.UserModel;
 import com.cdph.virtualrvm.util.Constants;
 
-public class AdminActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener
+public class AdminActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, View.OnClickListener
 {
 	private SharedPreferences pref;
 	private VirtualRVMDatabase db;
@@ -85,6 +85,17 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
     }
 	
 	@Override
+	public void onClick(View view)
+	{
+		switch(view.getId())
+		{
+			case R.id.fab_add:
+				
+			break;
+		}
+	}
+	
+	@Override
 	public void onBackPressed() 
 	{
 		finish();
@@ -133,6 +144,9 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
 		
 		contentList = findViewById(R.id.content_list);
 		contentList.setLayoutManager(new LinearLayoutManager(this));
+		
+		fabAdd = findViewById(R.id.fab_add);
+		fabAdd.setOnClickListener(this);
 		
 		header = findViewById(R.id.admin_list_header);
 		header.setTypeface(flatFont, Typeface.BOLD);
@@ -195,8 +209,7 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
 			String cent = userData.get(2);
 			String rank = userData.get(3);
 
-			if(!name.equals(pref.getString(Constants.KEY_USERNAME, "")))
-				userModels.add(UserModel.newUser(name, pass, cent, rank));
+			userModels.add(UserModel.newUser(name, pass, cent, rank));
 		}
 
 		userAdapter = new UserListAdapter(userModels);

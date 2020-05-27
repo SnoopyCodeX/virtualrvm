@@ -50,7 +50,7 @@ public class LoginRegisterActivity extends AppCompatActivity implements View.OnC
 			initData();
 		
 		if(sp.getBoolean(Constants.KEY_REMEMBER, false))
-			if(sp.getInt(Constants.KEY_RANK, 0) == 0)
+			if(sp.getInt(Constants.KEY_RANK, 0) == 1)
 				startActivity(new Intent(this, MainActivity.class));
 			else
 				startActivity(new Intent(this, AdminActivity.class));
@@ -196,7 +196,7 @@ public class LoginRegisterActivity extends AppCompatActivity implements View.OnC
 		data.putInt(Constants.KEY_RANK, Integer.parseInt(userData[3])).commit();
 		data.putBoolean(Constants.KEY_REMEMBER, rememberLogin).commit();
 		
-		if(sp.getInt(Constants.KEY_RANK, 0) == 0)
+		if(sp.getInt(Constants.KEY_RANK, 0) == 1)
 			startActivity(new Intent(this, MainActivity.class));
 		else
 			startActivity(new Intent(this, AdminActivity.class));

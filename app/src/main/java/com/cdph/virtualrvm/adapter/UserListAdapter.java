@@ -1,7 +1,10 @@
 package com.cdph.virtualrvm.adapter;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Typeface;
+import android.preference.PreferenceManager;
+import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +23,7 @@ import cn.pedant.SweetAlert.SweetAlertDialog;
 import com.cdph.virtualrvm.AdminActivity;
 import com.cdph.virtualrvm.db.VirtualRVMDatabase;
 import com.cdph.virtualrvm.model.UserModel;
+import com.cdph.virtualrvm.util.Constants;
 import com.cdph.virtualrvm.R;
 
 import java.util.ArrayList;
@@ -57,6 +61,12 @@ public class UserListAdapter extends Adapter<UserListAdapter.UserListViewHolder>
 
 		holder.tv_userLabel.setText("Username");
 		holder.tv_userName.setText(model.userName);
+		
+		String rank = (Integer.parseInt(model.userRank) == 0) ? "<font color=\"#FFBB33\">Member</font>" : "<font color=\"#99CC00\">Admin</font>";
+		
+		if(model.userName.equals(holder.prefs.getString(Constants.KEY_USERNAME, "")))
+			rank = "<font color=\"#33B5E5\"><strong>[YOU]</strong></font> " + rank;
+		holder.tv_userRank.setText(Html.fromHtml(String.format("%s", rank)));
 
 		holder.btn_delete.setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -140,20 +150,23 @@ public class UserListAdapter extends Adapter<UserListAdapter.UserListViewHolder>
 	public class UserListViewHolder extends ViewHolder
 	{
 		public Context context;
+		public SharedPreferences prefs;
 		public ImageButton btn_edit, btn_delete;
 		public LinearLayout parent;
-		public TextView tv_userName, tv_userLabel;
+		public TextView tv_userName, tv_userLabel, tv_userRank;
 
 		public UserListViewHolder(View view)
 		{
 			super(view);
 
 			context = view.getContext();
+			prefs = PreferenceManager.getDefaultSharedPreferences(context);
 			parent = (LinearLayout) view;
 			btn_edit = view.findViewById(R.id.content_list_edit);
 			btn_delete = view.findViewById(R.id.content_list_delete);
 			tv_userName = view.findViewById(R.id.content_list_name);
 			tv_userLabel = view.findViewById(R.id.content_list_label);
+			tv_userRank = view.findViewById(R.id.content_list_rank);
 		}
 	}
 
@@ -168,7 +181,7 @@ public class UserListAdapter extends Adapter<UserListAdapter.UserListViewHolder>
 			{
 				String filterPattern = constraint.toString().toLowerCase().trim();
 				for(UserModel model : userListFull)
-					if(model.userName.contains(filterPattern))
+					if(model.userName.toLowerCase().contains(filterPattern))
 						filteredList.add(model);
 			}
 			else

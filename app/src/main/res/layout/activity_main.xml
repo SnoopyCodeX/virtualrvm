@@ -41,7 +41,7 @@
 				android:layout_height="wrap_content"
 				android:layout_weight="1"
 				android:gravity="center"
-				android:textColor="@color/lightGrey"
+				android:textColor="@color/tealishGreen"
 				android:text="@string/personalDetail_header"
 				style="@style/Base.TextAppearance.AppCompat.Large"/>
 
@@ -122,7 +122,7 @@
 				android:layout_height="wrap_content"
 				android:layout_weight="1"
 				android:gravity="center"
-				android:textColor="@color/lightGrey"
+				android:textColor="@color/tealishGreen"
 				android:text="@string/scannerInfo_header"
 				style="@style/Base.TextAppearance.AppCompat.Large"/>
 
