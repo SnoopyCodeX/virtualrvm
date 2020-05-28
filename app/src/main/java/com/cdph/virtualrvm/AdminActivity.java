@@ -45,7 +45,7 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
 	private RecyclerView contentList;
 	private Typeface flatFont;
     private EditText searchView;
-	private TextView header;
+	private TextView header, emptyText;
     
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -90,7 +90,16 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
 		switch(view.getId())
 		{
 			case R.id.fab_add:
-				
+				switch(header.getText().toString())
+				{
+					case "Items List":
+						
+					break;
+					
+					case "Users List":
+						
+					break;
+				}
 			break;
 		}
 	}
@@ -142,6 +151,9 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
         bottomNav = findViewById(R.id.bottom_navigation);
         bottomNav.setOnNavigationItemSelectedListener(this);
 		
+		emptyText = findViewById(R.id.content_list_empty);
+		emptyText.setTypeface(flatFont, Typeface.BOLD);
+		
 		contentList = findViewById(R.id.content_list);
 		contentList.setLayoutManager(new LinearLayoutManager(this));
 		
@@ -177,6 +189,21 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
 	public void loadAllItemData()
 	{
 		List<ArrayList<String>> items = db.getAllItemData();
+		
+		if(items == null)
+		{
+			new SweetAlertDialog(this, SweetAlertDialog.WARNING_TYPE)
+				.setTitleText("Warning")
+				.setContentText("There seems to be no items stored on the database.")
+				.setConfirmText("Okay")
+				.show();
+			
+			contentList.setVisibility(View.GONE);
+			emptyText.setVisibility(View.VISIBLE);
+			emptyText.setText("No items to display");
+			return;
+		}
+		
 		List<ItemModel> itemModels = new ArrayList<>();
 		
 		for(ArrayList<String> itemData : items)
@@ -193,6 +220,9 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
 		itemAdapter = new ItemListAdapter(itemModels);
 		itemAdapter.setActivity(this);
 		userAdapter = null;
+		
+		contentList.setVisibility(View.VISIBLE);
+		emptyText.setVisibility(View.GONE);
 		contentList.setAdapter(itemAdapter);
 		contentList.requestFocus();
 	}
@@ -200,6 +230,22 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
 	public void loadAllUserData()
 	{
 		List<ArrayList<String>> users = db.getAllUserData();
+		
+		if(users == null)
+		{
+			new SweetAlertDialog(this, SweetAlertDialog.WARNING_TYPE)
+				.setTitleText("Warning")
+				.setContentText("There seems to be no users registered on the database.")
+				.setConfirmText("Okay")
+				.show();
+			
+			contentList.setVisibility(View.GONE);
+			emptyText.setVisibility(View.VISIBLE);
+			emptyText.setText("No users to display");
+				
+			return;
+		}
+		
 		List<UserModel> userModels = new ArrayList<>();
 
 		for(ArrayList<String> userData : users)
@@ -215,6 +261,9 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
 		userAdapter = new UserListAdapter(userModels);
 		userAdapter.setActivity(this);
 		itemAdapter = null;
+		
+		contentList.setVisibility(View.VISIBLE);
+		emptyText.setVisibility(View.GONE);
  		contentList.setAdapter(userAdapter);
 		contentList.requestFocus();
 	}
