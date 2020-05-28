@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">@color/darkGreyBlue</color>
+    <color name="colorPrimaryDark">@color/dark</color>
+    <color name="colorAccent">@color/tealishGreen</color>
+	
+	<color name="dark">#16242d</color>
+	<color name="darkGreyBlue">#2a4057</color>
+	<color name="lightGrey">#dfe3e4</color>
+	<color name="tealishGreen">#00d170</color>
+	<color name="fadedTealishGreen">#8000d170</color>
+	<color name="spruce">#005c2e</color>
+</resources>
