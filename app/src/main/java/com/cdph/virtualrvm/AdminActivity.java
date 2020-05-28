@@ -192,12 +192,6 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
 		
 		if(items == null)
 		{
-			new SweetAlertDialog(this, SweetAlertDialog.WARNING_TYPE)
-				.setTitleText("Warning")
-				.setContentText("There seems to be no items stored on the database.")
-				.setConfirmText("Okay")
-				.show();
-			
 			contentList.setVisibility(View.GONE);
 			emptyText.setVisibility(View.VISIBLE);
 			emptyText.setText("No items to display");
@@ -233,12 +227,6 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
 		
 		if(users == null)
 		{
-			new SweetAlertDialog(this, SweetAlertDialog.WARNING_TYPE)
-				.setTitleText("Warning")
-				.setContentText("There seems to be no users registered on the database.")
-				.setConfirmText("Okay")
-				.show();
-			
 			contentList.setVisibility(View.GONE);
 			emptyText.setVisibility(View.VISIBLE);
 			emptyText.setText("No users to display");
