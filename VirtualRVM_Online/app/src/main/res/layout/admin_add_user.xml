@@ -1,0 +1,128 @@
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"
+	android:orientation="vertical">
+
+	<LinearLayout
+		android:layout_height="match_parent"
+		android:layout_width="match_parent"
+		android:orientation="vertical">
+
+		<android.support.v7.widget.CardView
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			app:cardBackgroundColor="@color/colorPrimary"
+			app:cardCornerRadius="2dp">
+
+			<ScrollView
+				android:layout_width="match_parent"
+				android:layout_height="match_parent"
+				android:fitsSystemWindows="true"
+				android:scrollbars="none">
+
+				<LinearLayout
+					android:layout_width="match_parent"
+					android:layout_height="match_parent"
+					android:orientation="vertical"
+					android:padding="5dp">
+
+					<TextView
+						android:id="@+id/et_header"
+						android:layout_width="match_parent"
+						android:layout_height="wrap_content"
+						android:textColor="@color/tealishGreen"
+						android:text="Add New User"
+						android:padding="8dp"
+						android:gravity="center"
+						style="@style/Base.TextAppearance.AppCompat.Large"/>
+
+					<EditText
+						android:id="@+id/et_username"
+						android:layout_width="match_parent"
+						android:layout_height="wrap_content"
+						android:layout_marginBottom="10dp"
+						android:hint="Username"
+						android:inputType="textPersonName"
+						android:singleLine="true"
+						android:imeOptions="actionNext"
+						android:textColor="@color/tealishGreen"
+						android:textColorHint="@color/fadedTealishGreen"
+						android:background="@drawable/searchinput_active"
+						android:padding="8dp"/>
+					
+					<EditText
+						android:id="@+id/et_password"
+						android:layout_width="match_parent"
+						android:layout_height="wrap_content"
+						android:layout_marginBottom="10dp"
+						android:hint="Password"
+						android:inputType="textPassword"
+						android:imeOptions="actionNext"
+						android:singleLine="true"
+						android:textColor="@color/tealishGreen"
+						android:textColorHint="@color/fadedTealishGreen"
+						android:background="@drawable/searchinput_active"
+						android:padding="8dp"/>
+
+					<EditText
+						android:id="@+id/et_cent"
+						android:layout_width="match_parent"
+						android:layout_height="wrap_content"
+						android:layout_marginBottom="10dp"
+						android:hint="User Coins"
+						android:singleLine="true"
+						android:imeOptions="actionDone"
+						android:inputType="numberDecimal"
+						android:textColor="@color/tealishGreen"
+						android:textColorHint="@color/fadedTealishGreen"
+						android:background="@drawable/searchinput_active"
+						android:padding="8dp"/>
+
+					<Spinner
+						android:id="@+id/et_rank"
+						android:layout_width="match_parent"
+						android:layout_height="wrap_content"
+						android:layout_marginBottom="10dp"
+						android:background="@drawable/searchinput_active"
+						android:textColor="@color/tealishGreen"
+						android:padding="8dp"/>
+
+					<LinearLayout
+						android:layout_width="match_parent"
+						android:layout_height="wrap_content"
+						android:layout_gravity="bottom"
+						android:orientation="horizontal">
+
+						<Button
+							style="?android:attr/buttonBarButtonStyle"
+							android:id="@+id/bt_add"
+							android:layout_weight="1"
+							android:layout_height="wrap_content"
+							android:layout_width="match_parent"
+							android:padding="8dp"
+							android:text="Add"
+							android:textColor="@color/tealishGreen"/>
+
+						<Button
+							style="?android:attr/buttonBarButtonStyle"
+							android:id="@+id/bt_cancel"
+							android:layout_weight="1"
+							android:layout_height="wrap_content"
+							android:layout_width="match_parent"
+							android:padding="8dp"
+							android:text="Cancel"
+							android:textColor="@android:color/holo_red_light"/>
+
+					</LinearLayout>
+
+				</LinearLayout>
+
+			</ScrollView>
+
+		</android.support.v7.widget.CardView>
+
+	</LinearLayout>
+
+</LinearLayout>

@@ -1,11 +1,11 @@
 package com.cdph.virtualrvm;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.Menu;
@@ -17,6 +17,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashMap;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -29,15 +32,16 @@ import android.support.design.widget.FloatingActionButton;
 import cn.pedant.SweetAlert.SweetAlertDialog;
 import com.cdph.virtualrvm.adapter.ItemListAdapter;
 import com.cdph.virtualrvm.adapter.UserListAdapter;
-import com.cdph.virtualrvm.db.VirtualRVMDatabase;
+import com.cdph.virtualrvm.dialog.AdminAddUserDialog;
 import com.cdph.virtualrvm.model.ItemModel;
 import com.cdph.virtualrvm.model.UserModel;
+import com.cdph.virtualrvm.net.InternetConnection.OnInternetConnectionChangedListener;
+import com.cdph.virtualrvm.net.VolleyRequest;
 import com.cdph.virtualrvm.util.Constants;
 
-public class AdminActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, View.OnClickListener
+public class AdminActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, View.OnClickListener, OnInternetConnectionChangedListener
 {
 	private SharedPreferences pref;
-	private VirtualRVMDatabase db;
 	private ItemListAdapter itemAdapter;
 	private UserListAdapter userAdapter;
     private BottomNavigationView bottomNav;
@@ -68,6 +72,7 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
         {
             case R.id.action_items:
 				loadAllItemData();
+				fabAdd.setImageResource(R.drawable.add_item);
             	header.setText(R.string.admin_items_header);
 				searchView.setHint("Search items...");
 				ret = true;
@@ -75,6 +80,7 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
 			
 			case R.id.action_users:
 				loadAllUserData();
+				fabAdd.setImageResource(R.drawable.add_user);
 				header.setText(R.string.admin_users_header);
 				searchView.setHint("Search username...");
 				ret = true;
@@ -97,7 +103,9 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
 					break;
 					
 					case "Users List":
-						
+						AdminAddUserDialog.init(this)
+							.setActivity(this)
+							.show();
 					break;
 				}
 			break;
@@ -105,8 +113,48 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
 	}
 	
 	@Override
+	public void onInternetConnectionChanged(boolean isConnected)
+	{
+		SweetAlertDialog swal = new SweetAlertDialog(this, SweetAlertDialog.WARNING_TYPE);
+		
+		if(!isConnected)
+		{
+			swal.setCancelable(false);
+			swal.setCanceledOnTouchOutside(false);
+			swal.setTitleText("Warning");
+			swal.setContentText("No internet connection, please turn on your internet connection");
+			swal.setConfirmText("Okay");
+			swal.setCancelText("No");
+
+			swal.setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+				@Override
+				public void onClick(SweetAlertDialog dlg)
+				{
+					startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
+				}
+			});
+
+			swal.setCancelClickListener(new SweetAlertDialog.OnSweetClickListener() {
+				@Override
+				public void onClick(SweetAlertDialog dlg)
+				{
+					finish();
+				}
+			});
+
+			swal.show();
+			
+			return;
+		}
+		
+		if(swal.isShowing())
+			swal.dismissWithAnimation();
+	}
+	
+	@Override
 	public void onBackPressed() 
 	{
+		finishAndRemoveTask();
 		finish();
 	}
 
@@ -133,7 +181,16 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
 						public void onClick(SweetAlertDialog dlg)
 						{
 							dlg.dismissWithAnimation();
-							signout();
+							
+							pref.edit()
+								.putString(Constants.KEY_CENTS, "")
+								.putString(Constants.KEY_USERNAME, "")
+								.putBoolean(Constants.KEY_REMEMBER, false)
+								.putInt(Constants.KEY_RANK, 0)
+								.commit();
+								
+							startActivity(new Intent(AdminActivity.this, LoginRegisterActivity.class));
+							AdminActivity.this.finish();
 						}
 					}).show();
 			break;
@@ -144,7 +201,7 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
     
     private void initViews()
     {
-		db = new VirtualRVMDatabase(this);
+		BaseApplication.conn.addOnInternetConnectionChangedListener(this);
 		pref = PreferenceManager.getDefaultSharedPreferences(this);
 		flatFont = Typeface.createFromAsset(getAssets(), "fonts/quicksand_light.ttf");
 		searchView = findViewById(R.id.content_list_searchView);
@@ -183,88 +240,168 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
 					userAdapter.getFilter().filter(cs);
 			}
 		});
-		contentList.requestFocus();
+		
+		contentList.setVisibility(View.GONE);
+		emptyText.setVisibility(View.VISIBLE);
+		emptyText.requestFocus();
     }
 	
 	public void loadAllItemData()
 	{
-		List<ArrayList<String>> items = db.getAllItemData();
-		
-		if(items == null)
-		{
-			contentList.setVisibility(View.GONE);
-			emptyText.setVisibility(View.VISIBLE);
-			emptyText.setText("No items to display");
+		if(!BaseApplication.conn.isConnected(this))
 			return;
-		}
 		
-		List<ItemModel> itemModels = new ArrayList<>();
+		HashMap<String, Object> data = new HashMap<>();
+		data.put("action_getAllItems", "");
 		
-		for(ArrayList<String> itemData : items)
-		{
-			String id = itemData.get(0);
-			String name = itemData.get(1);
-			String weight = itemData.get(2);
-			String type = itemData.get(3);
-			String worth = itemData.get(4);
-			
-			itemModels.add(ItemModel.newItem(id, name, weight, type, worth));
-		}
+		final SweetAlertDialog pd = new SweetAlertDialog(this, SweetAlertDialog.PROGRESS_TYPE);
+		pd.getProgressHelper().setBarColor(android.graphics.Color.parseColor("#00d170"));
+		pd.setTitleText("Loading items...");
+		pd.setCancelable(false);
+		pd.show();
 		
-		itemAdapter = new ItemListAdapter(itemModels);
-		itemAdapter.setActivity(this);
-		userAdapter = null;
-		
-		contentList.setVisibility(View.VISIBLE);
-		emptyText.setVisibility(View.GONE);
-		contentList.setAdapter(itemAdapter);
-		contentList.requestFocus();
+		VolleyRequest.newRequest(this, Constants.BASE_URL)
+			.addOnVolleyResponseReceivedListener(new VolleyRequest.OnVolleyResponseReceivedListener() {
+				@Override
+				public void onVolleyResponseReceived(String response)
+				{
+					pd.dismissWithAnimation();
+					
+					try {
+						JSONArray jar = new JSONArray(response);
+						JSONObject job = jar.getJSONObject(0);
+						
+						JSONArray jdat = job.getJSONArray("data");
+						String message = job.getString("message");
+						boolean hasError = job.getBoolean("hasError");
+						
+						if(!hasError)
+						{
+							List<ItemModel> items = new ArrayList<>();
+							for(int i = 0; i < jdat.length() && jdat.length() > 0; i++)
+							{
+								JSONObject obj = jdat.getJSONObject(i);
+								String id = obj.getString("item_id");
+								String name = obj.getString("item_name");
+								String weight = obj.getString("item_weight");
+								String type = obj.getString("item_type");
+								String worth = obj.getString("item_worth");
+								
+								items.add(ItemModel.newItem(id, name, weight, type, worth));
+							}
+							
+							if(items.size() > 0)
+							{
+								ItemListAdapter adapter = new ItemListAdapter(items);
+								adapter.setActivity(AdminActivity.this);
+								emptyText.setVisibility(View.GONE);
+								contentList.setVisibility(View.VISIBLE);
+								contentList.setAdapter(adapter);
+								return;
+							}
+							
+							contentList.setVisibility(View.GONE);
+							emptyText.setVisibility(View.VISIBLE);
+							emptyText.setText("No items found...");
+							return;
+						}
+						
+						contentList.setVisibility(View.GONE);
+						emptyText.setVisibility(View.VISIBLE);
+						emptyText.setText("No items found...");
+						
+						pd.changeAlertType(SweetAlertDialog.ERROR_TYPE);
+						pd.setTitleText("Operation Failed");
+						pd.setContentText(message);
+						pd.setCancelable(false);
+						pd.setCanceledOnTouchOutside(false);
+						pd.setConfirmText("Okay");
+						pd.show();
+					} catch(Exception e) {
+						e.printStackTrace();
+					}
+				}
+			})
+			.setEndPoint("item/getAllItems.php")
+			.sendRequest(data);
 	}
 	
 	public void loadAllUserData()
 	{
-		List<ArrayList<String>> users = db.getAllUserData();
-		
-		if(users == null)
-		{
-			contentList.setVisibility(View.GONE);
-			emptyText.setVisibility(View.VISIBLE);
-			emptyText.setText("No users to display");
-				
+		if(!BaseApplication.conn.isConnected(this))
 			return;
-		}
 		
-		List<UserModel> userModels = new ArrayList<>();
-
-		for(ArrayList<String> userData : users)
-		{
-			String name = userData.get(0);
-			String pass = userData.get(1);
-			String cent = userData.get(2);
-			String rank = userData.get(3);
-
-			userModels.add(UserModel.newUser(name, pass, cent, rank));
-		}
-
-		userAdapter = new UserListAdapter(userModels);
-		userAdapter.setActivity(this);
-		itemAdapter = null;
+		HashMap<String, Object> data = new HashMap<>();
+		data.put("action_getAllUsers", "");
 		
-		contentList.setVisibility(View.VISIBLE);
-		emptyText.setVisibility(View.GONE);
- 		contentList.setAdapter(userAdapter);
-		contentList.requestFocus();
-	}
-	
-	private void signout()
-	{
-		SharedPreferences.Editor edit = pref.edit();
-		edit.putString(Constants.KEY_CENTS, "")
-			.putString(Constants.KEY_RANK, "")
-			.putBoolean(Constants.KEY_REMEMBER, false)
-			.putString(Constants.KEY_USERNAME, "").commit();
+		final SweetAlertDialog pd = new SweetAlertDialog(this, SweetAlertDialog.PROGRESS_TYPE);
+		pd.getProgressHelper().setBarColor(android.graphics.Color.parseColor("#00d170"));
+		pd.setTitleText("Loading users...");
+		pd.setCancelable(false);
+		pd.show();
+		
+		VolleyRequest.newRequest(this, Constants.BASE_URL)
+			.addOnVolleyResponseReceivedListener(new VolleyRequest.OnVolleyResponseReceivedListener() {
+				@Override
+				public void onVolleyResponseReceived(String response)
+				{
+					pd.dismissWithAnimation();
+					
+					try {
+						JSONArray jar = new JSONArray(response);
+						JSONObject job = jar.getJSONObject(0);
+						
+						JSONArray jdat = job.getJSONArray("data");
+						String message = job.getString("message");
+						boolean hasError = job.getBoolean("hasError");
 
-		startActivity(new Intent(this, LoginRegisterActivity.class));
-		finish();
+						if(!hasError)
+						{
+							List<UserModel> users = new ArrayList<>();
+							for(int i = 0; i < jdat.length() && jdat.length() > 0; i++)
+							{
+								JSONObject obj = jdat.getJSONObject(i);
+								String name = obj.getString("user_name");
+								String pass = obj.getString("user_pass");
+								String cent = obj.getString("user_cent");
+								String rank = obj.getString("user_rank");
+
+								users.add(UserModel.newUser(name, pass, cent, rank));
+							}
+
+							if(users.size() > 0)
+							{
+								UserListAdapter adapter = new UserListAdapter(users);
+								adapter.setActivity(AdminActivity.this);
+								emptyText.setVisibility(View.GONE);
+								contentList.setVisibility(View.VISIBLE);
+								contentList.setAdapter(adapter);
+								return;
+							}
+
+							contentList.setVisibility(View.GONE);
+							emptyText.setVisibility(View.VISIBLE);
+							emptyText.setText("No users found...");
+							return;
+						}
+						
+						contentList.setVisibility(View.GONE);
+						emptyText.setVisibility(View.VISIBLE);
+						emptyText.setText("No users found...");
+
+						pd.changeAlertType(SweetAlertDialog.ERROR_TYPE);
+						pd.setTitleText("Operation Failed");
+						pd.setContentText(message);
+						pd.setCancelable(false);
+						pd.setCanceledOnTouchOutside(false);
+						pd.setConfirmText("Okay");
+						pd.show();
+					} catch(Exception e) {
+						e.printStackTrace();
+					}
+				}
+			})
+			.setEndPoint("user/getAllUsers.php")
+			.sendRequest(data);
 	}
 }

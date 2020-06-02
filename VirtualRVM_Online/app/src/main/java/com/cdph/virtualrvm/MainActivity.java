@@ -21,12 +21,11 @@ import android.support.v7.widget.Toolbar;
 import me.dm7.barcodescanner.zbar.Result;
 import me.dm7.barcodescanner.zbar.ZBarScannerView;
 import cn.pedant.SweetAlert.SweetAlertDialog;
-import com.cdph.virtualrvm.db.VirtualRVMDatabase;
+import com.cdph.virtualrvm.model.ItemModel;
 import com.cdph.virtualrvm.util.Constants;
 
 public class MainActivity extends AppCompatActivity implements ZBarScannerView.ResultHandler, CompoundButton.OnCheckedChangeListener, View.OnClickListener
 {
-	private VirtualRVMDatabase db;
 	private SharedPreferences preference;
 	private ZBarScannerView scannerView;
 	private Button signout;
@@ -75,7 +74,6 @@ public class MainActivity extends AppCompatActivity implements ZBarScannerView.R
 	
 	private void initViews()
 	{
-		db = new VirtualRVMDatabase(this);
 		flatFont = Typeface.createFromAsset(getAssets(), "fonts/quicksand_light.ttf");
 		preference = PreferenceManager.getDefaultSharedPreferences(this);
 		scannerView = findViewById(R.id.scanner_view);
@@ -186,26 +184,13 @@ public class MainActivity extends AppCompatActivity implements ZBarScannerView.R
 	@Override
 	public void handleResult(Result result)
 	{
-		String[] itemData = db.getItemData(result.getContents());
+		ItemModel itemData = null;
 		SweetAlertDialog dlg = new SweetAlertDialog(this);
 		
 		if(itemData != null)
 		{
-			String id = String.format("<font color=\"#00d170\">%s</font><br/>", itemData[0]);
-			String name = String.format("<font color=\"#00d170\">%s</font><br/>", itemData[1]);
-			String weight = String.format("<font color=\"#00d170\">%s</font><br/>", itemData[2]);
-			String type = String.format("<font color=\"#00d170\">%s</font><br/>", itemData[3]);
-			String amnt = String.format("<font color=\"#00d170\">%s</font><br/>", itemData[4]);
-			scannerInfo.setText(Html.fromHtml(String.format(getString(R.string.scannerInfo_content), id, name, weight, type, amnt)));
-			
-			String[] userData = db.getUserData(preference.getString(Constants.KEY_USERNAME, ""));
-			double user_cent = Double.parseDouble(userData[2].replace("¢", "").replace("₱", ""));
-			double item_cent = Double.parseDouble(itemData[4].replace("¢", ""));
-			db.updateUserData("user_cent", ((user_cent + item_cent) >= 1 ? "₱" : "") + String.valueOf(user_cent + item_cent) + ((user_cent + item_cent) < 1 ? "¢" : ""), userData[0]);
-			updatePersonalDetail(((user_cent + item_cent) >= 1 ? "₱" : "") + String.valueOf(user_cent + item_cent) + ((user_cent + item_cent) < 1 ? "¢" : ""));
-			
 			dlg.setTitleText("Congratulations")
-				.setContentText(Html.fromHtml(String.format(getString(R.string.item_valid), amnt)).toString())
+				//.setContentText(Html.fromHtml(String.format(getString(R.string.item_valid), amnt)).toString())
 				.setConfirmText("Thank you")
 				.changeAlertType(SweetAlertDialog.SUCCESS_TYPE);
 		}
@@ -255,22 +240,9 @@ public class MainActivity extends AppCompatActivity implements ZBarScannerView.R
 						public void onClick(SweetAlertDialog dlg)
 						{
 							dlg.dismissWithAnimation();
-							signout();
 						}
 					}).show();
 			break;
 		}
-	}
-	
-	private void signout()
-	{
-		SharedPreferences.Editor edit = preference.edit();
-		edit.putString(Constants.KEY_CENTS, "")
-			.putString(Constants.KEY_RANK, "")
-			.putBoolean(Constants.KEY_REMEMBER, false)
-			.putString(Constants.KEY_USERNAME, "").commit();
-
-		startActivity(new Intent(this, LoginRegisterActivity.class));
-		finish();
 	}
 }

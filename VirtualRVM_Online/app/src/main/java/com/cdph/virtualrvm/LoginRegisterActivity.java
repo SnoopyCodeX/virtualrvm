@@ -1,10 +1,13 @@
 package com.cdph.virtualrvm;
 
+import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.util.Base64;
 import android.view.View;
 import android.widget.Button;
@@ -13,15 +16,20 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import java.util.ArrayList;
+import java.util.HashMap;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import android.support.v7.app.AppCompatActivity;
-import com.cdph.virtualrvm.db.VirtualRVMDatabase;
+import com.cdph.virtualrvm.net.InternetConnection.OnInternetConnectionChangedListener;
+import com.cdph.virtualrvm.net.VolleyRequest;
 import com.cdph.virtualrvm.util.Constants;
 import cn.pedant.SweetAlert.SweetAlertDialog;
+import com.cdph.virtualrvm.model.UserModel;
 
-public class LoginRegisterActivity extends AppCompatActivity implements View.OnClickListener, CompoundButton.OnCheckedChangeListener
+public class LoginRegisterActivity extends AppCompatActivity implements View.OnClickListener, CompoundButton.OnCheckedChangeListener, OnInternetConnectionChangedListener
 {
-	private VirtualRVMDatabase db;
 	private SharedPreferences sp;
 	private Typeface flatFont;
 	private LinearLayout form_signin, form_signup;
@@ -38,7 +46,12 @@ public class LoginRegisterActivity extends AppCompatActivity implements View.OnC
         super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_login_register);
 		
-		initViews();
+		try {
+			initViews();
+		} catch(Exception e) {
+			e.printStackTrace();
+			android.util.Log.e(LoginRegisterActivity.class.toGenericString(), e.getMessage());
+		}
     }
 	
 	@Override
@@ -46,45 +59,171 @@ public class LoginRegisterActivity extends AppCompatActivity implements View.OnC
 	{
 		super.onResume();
 		
-		if(sp.getBoolean(Constants.KEY_FIRST_LAUNCH, true))
-			initData();
+		try {
+			if(sp.getBoolean(Constants.KEY_FIRST_LAUNCH, true))
+			{
+				sp.edit().putBoolean(Constants.KEY_FIRST_LAUNCH, false).commit();
+				requestPermissions();
+			}
 		
-		if(sp.getBoolean(Constants.KEY_REMEMBER, false))
-			if(sp.getInt(Constants.KEY_RANK, 0) == 1)
-				startActivity(new Intent(this, MainActivity.class));
-			else
-				startActivity(new Intent(this, AdminActivity.class));
+			if(sp.getBoolean(Constants.KEY_REMEMBER, false))
+				if(sp.getInt(Constants.KEY_RANK, 0) == 0)
+					startActivity(new Intent(this, MainActivity.class));
+				else
+					startActivity(new Intent(this, AdminActivity.class));
+			
+		} catch(Exception e) {
+			e.printStackTrace();
+			android.util.Log.e(LoginRegisterActivity.class.toString(), e.getMessage());
+		}
+	}
+	
+	@Override
+	public void onInternetConnectionChanged(boolean isConnected)
+	{
+		SweetAlertDialog swal = new SweetAlertDialog(this, SweetAlertDialog.WARNING_TYPE);
 		
+		if(!isConnected)
+		{
+			swal.setCancelable(false);
+			swal.setCanceledOnTouchOutside(false);
+			swal.setTitleText("Warning");
+			swal.setContentText("No internet connection, please turn on your internet connection");
+			swal.setConfirmText("Okay");
+			swal.setCancelText("No");
+
+			swal.setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+				@Override
+				public void onClick(SweetAlertDialog dlg)
+				{
+					startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
+				}
+			});
+
+			swal.setCancelClickListener(new SweetAlertDialog.OnSweetClickListener() {
+				@Override
+				public void onClick(SweetAlertDialog dlg)
+				{
+					finish();
+				}
+			});
+
+			swal.show();
+			return;
+		}
+		
+		if(swal.isShowing())
+			swal.dismissWithAnimation();
+	}
+	
+	private void requestPermissions()
+	{
+		try {
+			ArrayList<String> permissions = new ArrayList<>();
+
+			if(checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED)
+				permissions.add(Manifest.permission.CAMERA);
+
+			if(checkSelfPermission(Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED)
+				permissions.add(Manifest.permission.INTERNET);
+				
+			if(checkSelfPermission(Manifest.permission.ACCESS_NETWORK_STATE) != PackageManager.PERMISSION_GRANTED)
+				permissions.add(Manifest.permission.ACCESS_NETWORK_STATE);
+
+			if(permissions.size() > 0)
+				requestPermissions(permissions.toArray(new String[permissions.size()]), 21);
+		} catch(Exception e) {
+			e.printStackTrace();
+			android.util.Log.e(LoginRegisterActivity.class.toString(), e.getMessage());
+		}
 	}
 	
 	@Override
 	public void onClick(View view)
 	{
-		switch(view.getId())
-		{
-			case R.id.logreg_bottom_nav:
-				signUpFormShown = !signUpFormShown;
-				
-				if(signUpFormShown)
-					showSignUpForm();
-				else
-					showSignInForm();
-			break;
-			
-			case R.id.logreg_signin_btn:
-				String str_signin_username = input_signin_username.getText().toString();
-				String str_signin_password = input_signin_password.getText().toString();
-				boolean rememberLogin = cb_signin_remember.isChecked();
-				
-				signin(str_signin_username, str_signin_password, rememberLogin);
-			break;
-			
-			case R.id.logreg_signup_btn:
-				String str_signup_username = input_signup_username.getText().toString();
-				String str_signup_password = input_signup_password.getText().toString();
-				
-				signup(str_signup_username, str_signup_password);
-			break;
+		try {
+			switch(view.getId())
+			{
+				case R.id.logreg_bottom_nav:
+					signUpFormShown = !signUpFormShown;
+
+					if(signUpFormShown)
+						showSignUpForm();
+					else
+						showSignInForm();
+				break;
+
+				case R.id.logreg_signin_btn:
+					String str_signin_username = input_signin_username.getText().toString();
+					String str_signin_password = input_signin_password.getText().toString();
+					boolean rememberLogin = cb_signin_remember.isChecked();
+
+					signin(str_signin_username, str_signin_password, rememberLogin);
+				break;
+
+				case R.id.logreg_signup_btn:
+					String str_signup_username = input_signup_username.getText().toString();
+					String str_signup_password = input_signup_password.getText().toString();
+
+					signup(str_signup_username, str_signup_password);
+				break;
+			}
+		} catch(Exception e) {
+			e.printStackTrace();
+			android.util.Log.e(LoginRegisterActivity.class.toString(), e.getMessage());
+		}
+	}
+	
+	@Override
+	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults)
+	{
+		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+		try {
+			boolean allGranted = false;
+			if(requestCode == 21)
+				for(int i = 0; i < grantResults.length; i++)
+				{
+					String permission = permissions[i];
+					int granted = grantResults[i];
+
+					if(permission.equals(Manifest.permission.CAMERA))
+						allGranted = (granted == PackageManager.PERMISSION_GRANTED);
+						
+					if(permission.equals(Manifest.permission.INTERNET))
+						allGranted = (granted == PackageManager.PERMISSION_GRANTED);
+						
+					if(permission.equals(Manifest.permission.ACCESS_NETWORK_STATE))
+						allGranted = (granted == PackageManager.PERMISSION_GRANTED);
+				}
+
+			sp.edit().putBoolean("isAllPermsGranted", allGranted).commit();
+			if(!allGranted)
+				new SweetAlertDialog(this, SweetAlertDialog.WARNING_TYPE)
+					.setTitleText("Warning")
+					.setContentText("App needs all the permissions to be granted!")
+					.setConfirmText("Grant Permissions")
+					.setCancelText("Nope")
+					.setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+						@Override
+						public void onClick(SweetAlertDialog dlg)
+						{
+							dlg.dismissWithAnimation();
+							requestPermissions();
+						}
+					})
+					.setCancelClickListener(new SweetAlertDialog.OnSweetClickListener() {
+						@Override
+						public void onClick(SweetAlertDialog dlg)
+						{
+							dlg.dismissWithAnimation();
+							finish();
+						}
+					})
+					.show();
+		} catch(Exception e) {
+			e.printStackTrace();
+			android.util.Log.e(LoginRegisterActivity.class.toString(), e.getMessage());
 		}
 	}
 	
@@ -94,7 +233,7 @@ public class LoginRegisterActivity extends AppCompatActivity implements View.OnC
 	
 	private void initViews()
 	{
-		db = new VirtualRVMDatabase(this);
+		BaseApplication.conn.addOnInternetConnectionChangedListener(this);
 		sp = PreferenceManager.getDefaultSharedPreferences(this);
 		flatFont = Typeface.createFromAsset(getAssets(), "fonts/quicksand_light.ttf");
 		
@@ -150,130 +289,228 @@ public class LoginRegisterActivity extends AppCompatActivity implements View.OnC
 		tv_bottom_info.setText(R.string.nav_dont_have_account);
 	}
 	
-	private void signin(String username, String password, boolean rememberLogin)
+	private void signin(String username, String password, final boolean rememberLogin)
 	{
-		if(username.isEmpty() && !password.isEmpty())
-		{
-			input_signin_username.setError(getString(R.string.empty_field));
-			return;
-		}
-		
-		else if(!username.isEmpty() && password.isEmpty())
-		{
-			input_signin_password.setError(getString(R.string.empty_field));
-			return;
-		}
-		
-		else if(!username.isEmpty() && password.length() < 8)
-		{
-			input_signin_password.setError(getString(R.string.password_too_short));
-			return;
-		}
-		
-		else if(username.isEmpty() && password.isEmpty())
-		{
-			input_signin_username.setError(getString(R.string.empty_field));
-			input_signin_password.setError(getString(R.string.empty_field));
-			return;
-		}
-		
-		if(db.getUserData(username) == null)
-		{
-			input_signin_username.setError(getString(R.string.not_valid_account));
-			return;
-		}
-		
-		if(!(new String(Base64.decode(db.getUserData(username)[1], Base64.DEFAULT)).equals(password)))
-		{
-			input_signin_password.setError(getString(R.string.incorrect_password));
-			return;
-		}
-		
-		String[] userData = db.getUserData(username);
-		SharedPreferences.Editor data = sp.edit();
-		data.putString(Constants.KEY_USERNAME, userData[0]).commit();
-		data.putString(Constants.KEY_CENTS, userData[2]).commit();
-		data.putInt(Constants.KEY_RANK, Integer.parseInt(userData[3])).commit();
-		data.putBoolean(Constants.KEY_REMEMBER, rememberLogin).commit();
-		
-		if(sp.getInt(Constants.KEY_RANK, 0) == 1)
-			startActivity(new Intent(this, MainActivity.class));
-		else
-			startActivity(new Intent(this, AdminActivity.class));
-		
-		finish();
-	}
-	
-	private void signup(String username, String password)
-	{
-		if(username.isEmpty() && !password.isEmpty())
-		{
-			input_signup_username.setError(getString(R.string.empty_field));
-			return;
-		}
+		try {
+			if(username.isEmpty() && !password.isEmpty())
+			{
+				input_signin_username.setError(getString(R.string.empty_field));
+				return;
+			}
 
-		else if(!username.isEmpty() && password.isEmpty())
-		{
-			input_signup_password.setError(getString(R.string.empty_field));
-			return;
-		}
+			else if(!username.isEmpty() && password.isEmpty())
+			{
+				input_signin_password.setError(getString(R.string.empty_field));
+				return;
+			}
 
-		else if(!username.isEmpty() && password.length() < 8)
-		{
-			input_signup_password.setError(getString(R.string.password_too_short));
-			return;
-		}
+			else if(!username.isEmpty() && password.length() < 8)
+			{
+				input_signin_password.setError(getString(R.string.password_too_short));
+				return;
+			}
 
-		else if(username.isEmpty() && password.isEmpty())
-		{
-			input_signup_username.setError(getString(R.string.empty_field));
-			input_signup_password.setError(getString(R.string.empty_field));
-			return;
-		}
-
-		if(db.getUserData(username) != null)
-		{
-			input_signup_username.setError(getString(R.string.user_exists));
+			else if(username.isEmpty() && password.isEmpty())
+			{
+				input_signin_username.setError(getString(R.string.empty_field));
+				input_signin_password.setError(getString(R.string.empty_field));
+				return;
+			}
 			
-			new SweetAlertDialog(this, SweetAlertDialog.ERROR_TYPE)
-				.setContentText(getString(R.string.user_exists))
-				.setTitleText("Register Failed")
-				.setConfirmText("Okay")
-				.setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+			else if(!BaseApplication.conn.isConnected(this)) 
+			{
+				SweetAlertDialog swal = new SweetAlertDialog(this, SweetAlertDialog.WARNING_TYPE);
+				swal.setCancelable(false);
+				swal.setCanceledOnTouchOutside(false);
+				swal.setTitleText("Warning");
+				swal.setContentText("No internet connection, please turn on your internet connection");
+				swal.setConfirmText("Okay");
+				swal.setCancelText("No");
+				
+				swal.setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
 					@Override
 					public void onClick(SweetAlertDialog dlg)
 					{
-						dlg.dismissWithAnimation();
+						startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
 					}
-				}).show();
+				});
+				
+				swal.setCancelClickListener(new SweetAlertDialog.OnSweetClickListener() {
+					@Override
+					public void onClick(SweetAlertDialog dlg)
+					{
+						finish();
+					}
+				});
+				
+				swal.show();
+				
+				return;
+			}
 			
-			return;
+			HashMap<String, Object> data = new HashMap<>();
+			data.put("action_getUserData_login", "");
+			data.put("user_name", username);
+			data.put("user_pass", password);
+			
+			final SweetAlertDialog pd = new SweetAlertDialog(this, SweetAlertDialog.PROGRESS_TYPE);
+			pd.getProgressHelper().setBarColor(android.graphics.Color.parseColor("#00d170"));
+			pd.setTitleText("Signing in...");
+			pd.setCancelable(false);
+			pd.show();
+			
+			VolleyRequest.newRequest(this, Constants.BASE_URL)
+				.addOnVolleyResponseReceivedListener(new VolleyRequest.OnVolleyResponseReceivedListener() {
+					@Override
+					public void onVolleyResponseReceived(String response)
+					{
+						try {
+							pd.dismissWithAnimation();
+							JSONArray jar = new JSONArray(response);
+							JSONObject job = jar.getJSONObject(0);
+
+							JSONArray jdat = job.getJSONArray("data");
+							String message = job.getString("message");
+							boolean hasError = job.getBoolean("hasError");
+							
+							if(!hasError)
+							{
+								for(int i = 0; i < jdat.length(); i++)
+								{
+									JSONObject obj = jdat.getJSONObject(i);
+									sp.edit()
+										.putString(Constants.KEY_CENTS, obj.getString("user_cent"))
+										.putString(Constants.KEY_USERNAME, obj.getString("user_name"))
+										.putBoolean(Constants.KEY_REMEMBER, rememberLogin)
+										.putInt(Constants.KEY_RANK, obj.getInt("user_rank"))
+										.commit();
+								}
+								
+								startActivity(new Intent(LoginRegisterActivity.this, (sp.getInt(Constants.KEY_RANK, 0) == 0) ? MainActivity.class : AdminActivity.class));
+								finish();
+								return;
+							}
+							
+							new SweetAlertDialog(LoginRegisterActivity.this, SweetAlertDialog.ERROR_TYPE)
+								.setTitleText("Sign In Failed")
+								.setContentText(message)
+								.setConfirmText("Okay")
+								.show();
+						} catch(Exception e) {
+							e.printStackTrace();
+						}
+					}
+				})
+				.setEndPoint("user/getUserData.php")
+				.sendRequest(data);
+		} catch(Exception e) {
+			e.printStackTrace();
+			android.util.Log.e(LoginRegisterActivity.class.toString(), e.getMessage());
 		}
-		
-		db.insertUserData(username, Base64.encodeToString(password.getBytes(), Base64.DEFAULT), 0, "0.0¢");
-		new SweetAlertDialog(this, SweetAlertDialog.SUCCESS_TYPE)
-			.setContentText(getString(R.string.register_success))
-			.setTitleText("Register Success")
-			.setConfirmText("Okay")
-			.setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
-				@Override
-				public void onClick(SweetAlertDialog dlg)
-				{
-					dlg.dismissWithAnimation();
-				}
-			}).show();
 	}
 	
-	private void initData()
+	private void signup(final String username, final String password)
 	{
-		db.insertItemData("Aquafina", "500mL", "4803925250019", "bottle", "0.50¢");
-		db.insertItemData("Nature's Spring", "350mL", "4800049720107", "bottle", "0.25¢");
-		db.insertItemData("Nature's Spring", "500mL", "4800049720114", "bottle", "0.50¢");
-		
-		db.insertItemData("Sprite", "330mL", "4801981110209", "can", "0.25¢");
-		db.insertItemData("Royal", "330mL", "4801981110100", "can", "0.25¢");
-		db.insertItemData("Coca Cola", "330mL", "4801981110001", "can", "0.25¢");
-		
-		sp.edit().putBoolean(Constants.KEY_FIRST_LAUNCH, false).commit();
+		try {
+			if(username.isEmpty() && !password.isEmpty())
+			{
+				input_signup_username.setError(getString(R.string.empty_field));
+				return;
+			}
+
+			else if(!username.isEmpty() && password.isEmpty())
+			{
+				input_signup_password.setError(getString(R.string.empty_field));
+				return;
+			}
+
+			else if(!username.isEmpty() && password.length() < 8)
+			{
+				input_signup_password.setError(getString(R.string.password_too_short));
+				return;
+			}
+
+			else if(username.isEmpty() && password.isEmpty())
+			{
+				input_signup_username.setError(getString(R.string.empty_field));
+				input_signup_password.setError(getString(R.string.empty_field));
+				return;
+			}
+			
+			else if(!BaseApplication.conn.isConnected(this)) 
+			{
+				SweetAlertDialog swal = new SweetAlertDialog(this, SweetAlertDialog.WARNING_TYPE);
+				swal.setCancelable(false);
+				swal.setCanceledOnTouchOutside(false);
+				swal.setTitleText("Warning");
+				swal.setContentText("No internet connection, please turn on your internet connection");
+				swal.setConfirmText("Okay");
+				swal.setCancelText("No");
+
+				swal.setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+					@Override
+					public void onClick(SweetAlertDialog dlg)
+					{
+						startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
+					}
+				});
+
+				swal.setCancelClickListener(new SweetAlertDialog.OnSweetClickListener() {
+					@Override
+					public void onClick(SweetAlertDialog dlg)
+					{
+						finish();
+					}
+				});
+
+				swal.show();
+
+				return;
+			}
+			
+			HashMap<String, Object> data = new HashMap<>();
+			data.put("action_addNewUser", "");
+			data.put("user_name", username);
+			data.put("user_pass", Base64.encodeToString(password.getBytes(), Base64.DEFAULT));
+			data.put("user_cent", "0.0¢");
+			data.put("user_rank", 0);
+			
+			((android.content.ClipboardManager) getSystemService(CLIPBOARD_SERVICE)).setPrimaryClip(android.content.ClipData.newPlainText("", Base64.encodeToString(password.getBytes(), Base64.DEFAULT)));
+			
+			final SweetAlertDialog pd = new SweetAlertDialog(this, SweetAlertDialog.PROGRESS_TYPE);
+			pd.getProgressHelper().setBarColor(android.graphics.Color.parseColor("#00d170"));
+			pd.setTitleText("Signing up...");
+			pd.setCancelable(false);
+			pd.show();
+			
+			VolleyRequest.newRequest(this, Constants.BASE_URL)
+				.addOnVolleyResponseReceivedListener(new VolleyRequest.OnVolleyResponseReceivedListener() {
+					@Override
+					public void onVolleyResponseReceived(String response)
+					{
+						try {
+							pd.dismissWithAnimation();
+							JSONArray jar = new JSONArray(response);
+							JSONObject job = jar.getJSONObject(0);
+							
+							String message = job.getString("message");
+							boolean hasError = job.getBoolean("hasError");
+							
+							new SweetAlertDialog(LoginRegisterActivity.this, ((hasError) ? SweetAlertDialog.ERROR_TYPE : SweetAlertDialog.SUCCESS_TYPE))
+								.setTitleText((hasError) ? "Sign Up Failed" : "Sign Up Success")
+								.setContentText(message)
+								.setConfirmText("Okay")
+								.show();
+						} catch(Exception e) {
+							e.printStackTrace();
+						}
+					}
+				})
+				.setEndPoint("user/addNewUser.php")
+				.sendRequest(data);
+		} catch(Exception e) {
+			e.printStackTrace();
+			android.util.Log.e(LoginRegisterActivity.class.toString(), e.getMessage());
+		}
 	}
 }

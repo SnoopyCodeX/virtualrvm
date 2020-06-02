@@ -19,7 +19,6 @@ import android.support.v7.widget.RecyclerView.Adapter;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import cn.pedant.SweetAlert.SweetAlertDialog;
 import com.cdph.virtualrvm.AdminActivity;
-import com.cdph.virtualrvm.db.VirtualRVMDatabase;
 import com.cdph.virtualrvm.model.ItemModel;
 import com.cdph.virtualrvm.R;
 
@@ -53,10 +52,7 @@ public class ItemListAdapter extends Adapter<ItemListAdapter.ItemListViewHolder>
 	@Override
 	public void onBindViewHolder(@NonNull final ItemListAdapter.ItemListViewHolder holder, int position)
 	{
-		final VirtualRVMDatabase db = new VirtualRVMDatabase(holder.context);
 		final ItemModel model = itemList.get(position);
-		
-		holder.tv_itemLabel.setText("Item Name");
 		holder.tv_itemName.setText(model.itemName);
 		
 		String type = "<font color=\"#33B5E5\">%s %s</font>";
@@ -83,7 +79,7 @@ public class ItemListAdapter extends Adapter<ItemListAdapter.ItemListViewHolder>
 						public void onClick(SweetAlertDialog dialog)
 						{
 							dialog.dismissWithAnimation();
-							if(db.deleteItemData(model.itemId) == 1)
+							if(true)
 							{
 								SweetAlertDialog dlg = new SweetAlertDialog(holder.context, SweetAlertDialog.SUCCESS_TYPE);
 								dlg.setTitleText("Delete Success");
@@ -151,7 +147,7 @@ public class ItemListAdapter extends Adapter<ItemListAdapter.ItemListViewHolder>
 		public Context context;
 		public ImageButton btn_edit, btn_delete;
 		public LinearLayout parent;
-		public TextView tv_itemName, tv_itemLabel, tv_itemType;
+		public TextView tv_itemName, tv_itemType;
 		
 		public ItemListViewHolder(View view)
 		{
@@ -161,7 +157,6 @@ public class ItemListAdapter extends Adapter<ItemListAdapter.ItemListViewHolder>
 			parent = (LinearLayout) view;
 			btn_edit = view.findViewById(R.id.content_list_edit);
 			btn_delete = view.findViewById(R.id.content_list_delete);
-			tv_itemLabel = view.findViewById(R.id.content_list_label);
 			tv_itemName = view.findViewById(R.id.content_list_name);
 			tv_itemType = view.findViewById(R.id.content_list_rank);
 		}
