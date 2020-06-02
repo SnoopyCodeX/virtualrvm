@@ -21,6 +21,7 @@ import android.support.v7.widget.Toolbar;
 import me.dm7.barcodescanner.zbar.Result;
 import me.dm7.barcodescanner.zbar.ZBarScannerView;
 import cn.pedant.SweetAlert.SweetAlertDialog;
+import com.cdph.virtualrvm.auth.AccountManager;
 import com.cdph.virtualrvm.model.ItemModel;
 import com.cdph.virtualrvm.util.Constants;
 
@@ -184,23 +185,8 @@ public class MainActivity extends AppCompatActivity implements ZBarScannerView.R
 	@Override
 	public void handleResult(Result result)
 	{
-		ItemModel itemData = null;
-		SweetAlertDialog dlg = new SweetAlertDialog(this);
+		//Send request to the server
 		
-		if(itemData != null)
-		{
-			dlg.setTitleText("Congratulations")
-				//.setContentText(Html.fromHtml(String.format(getString(R.string.item_valid), amnt)).toString())
-				.setConfirmText("Thank you")
-				.changeAlertType(SweetAlertDialog.SUCCESS_TYPE);
-		}
-		else
-			dlg.setTitleText("Try Again")
-				.setContentText(getString(R.string.item_invalid))
-				.setConfirmText("Okay")
-				.changeAlertType(SweetAlertDialog.ERROR_TYPE);
-		
-		dlg.show();
 		Handler resetHandler = new Handler();
 		resetHandler.postDelayed(new Runnable() {
 			@Override
@@ -240,6 +226,13 @@ public class MainActivity extends AppCompatActivity implements ZBarScannerView.R
 						public void onClick(SweetAlertDialog dlg)
 						{
 							dlg.dismissWithAnimation();
+							
+							AccountManager.getInstance(MainActivity.this)
+								.removeUserData()
+								.commit();
+								
+							MainActivity.this.finish();
+							startActivity(new Intent(MainActivity.this, LoginRegisterActivity.class));
 						}
 					}).show();
 			break;

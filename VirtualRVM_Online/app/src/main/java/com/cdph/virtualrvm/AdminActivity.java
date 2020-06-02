@@ -32,6 +32,8 @@ import android.support.design.widget.FloatingActionButton;
 import cn.pedant.SweetAlert.SweetAlertDialog;
 import com.cdph.virtualrvm.adapter.ItemListAdapter;
 import com.cdph.virtualrvm.adapter.UserListAdapter;
+import com.cdph.virtualrvm.auth.AccountManager;
+import com.cdph.virtualrvm.dialog.AdminAddItemDialog;
 import com.cdph.virtualrvm.dialog.AdminAddUserDialog;
 import com.cdph.virtualrvm.model.ItemModel;
 import com.cdph.virtualrvm.model.UserModel;
@@ -99,7 +101,9 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
 				switch(header.getText().toString())
 				{
 					case "Items List":
-						
+						AdminAddItemDialog.init(this)
+							.setActivity(this)
+							.show();
 					break;
 					
 					case "Users List":
@@ -182,11 +186,8 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
 						{
 							dlg.dismissWithAnimation();
 							
-							pref.edit()
-								.putString(Constants.KEY_CENTS, "")
-								.putString(Constants.KEY_USERNAME, "")
-								.putBoolean(Constants.KEY_REMEMBER, false)
-								.putInt(Constants.KEY_RANK, 0)
+							AccountManager.getInstance(AdminActivity.this)
+								.removeUserData()
 								.commit();
 								
 							startActivity(new Intent(AdminActivity.this, LoginRegisterActivity.class));
@@ -252,7 +253,7 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
 			return;
 		
 		HashMap<String, Object> data = new HashMap<>();
-		data.put("action_getAllItems", "");
+		data.put("action_getAllItemData", "");
 		
 		final SweetAlertDialog pd = new SweetAlertDialog(this, SweetAlertDialog.PROGRESS_TYPE);
 		pd.getProgressHelper().setBarColor(android.graphics.Color.parseColor("#00d170"));

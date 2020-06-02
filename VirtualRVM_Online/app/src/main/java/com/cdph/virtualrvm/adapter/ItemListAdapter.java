@@ -79,37 +79,8 @@ public class ItemListAdapter extends Adapter<ItemListAdapter.ItemListViewHolder>
 						public void onClick(SweetAlertDialog dialog)
 						{
 							dialog.dismissWithAnimation();
-							if(true)
-							{
-								SweetAlertDialog dlg = new SweetAlertDialog(holder.context, SweetAlertDialog.SUCCESS_TYPE);
-								dlg.setTitleText("Delete Success");
-								dlg.setContentText("Item has been deleted successfully!");
-								dlg.setConfirmText("Okay");
-								dlg.setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
-									@Override
-									public void onClick(SweetAlertDialog dlg)
-									{
-										dlg.dismissWithAnimation();
-									}
-								});
-								dlg.show();
-								
-								activity.loadAllItemData();
-								return;
-							}
 							
-							SweetAlertDialog dlg = new SweetAlertDialog(holder.context, SweetAlertDialog.SUCCESS_TYPE);
-							dlg.setTitleText("Delete Failed");
-							dlg.setContentText("Item deletion has failed!");
-							dlg.setConfirmText("Okay");
-							dlg.setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
-								@Override
-								public void onClick(SweetAlertDialog dlg)
-								{
-									dlg.dismissWithAnimation();
-								}
-							});
-							dlg.show();
+							//Delete Item
 						}
 					})
 					.show();

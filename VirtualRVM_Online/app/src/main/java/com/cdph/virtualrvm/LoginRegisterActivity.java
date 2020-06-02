@@ -22,6 +22,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import android.support.v7.app.AppCompatActivity;
+import com.cdph.virtualrvm.auth.AccountManager;
 import com.cdph.virtualrvm.net.InternetConnection.OnInternetConnectionChangedListener;
 import com.cdph.virtualrvm.net.VolleyRequest;
 import com.cdph.virtualrvm.util.Constants;
@@ -378,11 +379,14 @@ public class LoginRegisterActivity extends AppCompatActivity implements View.OnC
 								for(int i = 0; i < jdat.length(); i++)
 								{
 									JSONObject obj = jdat.getJSONObject(i);
-									sp.edit()
-										.putString(Constants.KEY_CENTS, obj.getString("user_cent"))
-										.putString(Constants.KEY_USERNAME, obj.getString("user_name"))
-										.putBoolean(Constants.KEY_REMEMBER, rememberLogin)
-										.putInt(Constants.KEY_RANK, obj.getInt("user_rank"))
+									
+									AccountManager.getInstance(LoginRegisterActivity.this)
+										.saveUserData(
+											obj.getString("user_name"),
+											obj.getString("user_cent"),
+											obj.getInt("user_rank"),
+											rememberLogin
+										)
 										.commit();
 								}
 								
