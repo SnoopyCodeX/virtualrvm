@@ -178,7 +178,7 @@ public class AdminEditUserDialog implements View.OnClickListener, AdapterView.On
 						
 					if(!newCents.contains("¢") || !newCents.contains("₱"))
 					{
-						double i = Double.parseDouble(newCents);
+						double i = Double.parseDouble(newCents.replaceAll("¢", "").replaceAll("₱", ""));
 
 						if(i >= 1)
 							newCents = "₱" + i;

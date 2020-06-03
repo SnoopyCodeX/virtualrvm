@@ -22,39 +22,42 @@ import android.support.v7.app.AlertDialog;
 import cn.pedant.SweetAlert.SweetAlertDialog;
 import com.cdph.virtualrvm.AdminActivity;
 import com.cdph.virtualrvm.BaseApplication;
+import com.cdph.virtualrvm.model.ItemModel;
 import com.cdph.virtualrvm.net.VolleyRequest;
 import com.cdph.virtualrvm.util.Constants;
 import com.cdph.virtualrvm.R;
 import me.dm7.barcodescanner.zbar.Result;
 import me.dm7.barcodescanner.zbar.ZBarScannerView;
 
-public class AdminAddItemDialog implements CompoundButton.OnCheckedChangeListener, View.OnClickListener, ZBarScannerView.ResultHandler
+public class AdminEditItemDialog implements CompoundButton.OnCheckedChangeListener, View.OnClickListener, ZBarScannerView.ResultHandler
 {
+	private ItemModel itemData;
     private AdminActivity activity;
 	private ZBarScannerView scanner;
 	private Switch swUseFlash;
 	private Typeface flatFont;
 	private View parent;
-	private Button btnAdd, btnCancel;
+	private Button btnSave, btnCancel;
 	private EditText etId, etName, etWeight, etType, etWorth;
 	private TextView header1, header2;
 	private AlertDialog dlg;
 	private Context ctx;
 	
-	private AdminAddItemDialog()
+	private AdminEditItemDialog()
 	{}
-	
-	private AdminAddItemDialog(Context ctx)
+
+	private AdminEditItemDialog(Context ctx, ItemModel itemData)
 	{
 		this.ctx = ctx;
+		this.itemData = itemData;
 	}
-	
-	public static synchronized AdminAddItemDialog init(Context ctx)
+
+	public static synchronized AdminEditItemDialog init(Context ctx, ItemModel itemData)
 	{
-		return (new AdminAddItemDialog(ctx));
+		return (new AdminEditItemDialog(ctx, itemData));
 	}
-	
-	public AdminAddItemDialog setActivity(AdminActivity activity)
+
+	public AdminEditItemDialog setActivity(AdminActivity activity)
 	{
 		this.activity = activity;
 		return this;
@@ -66,56 +69,56 @@ public class AdminAddItemDialog implements CompoundButton.OnCheckedChangeListene
 		if(dlg != null || !dlg.isShowing())
 			dlg.show();
 	}
-	
+
 	private void init()
 	{
 		dlg = new AlertDialog.Builder(ctx).create();
 		dlg.setCancelable(false);
 		dlg.setCanceledOnTouchOutside(false);
-		
-		parent = LayoutInflater.from(ctx).inflate(R.layout.admin_add_item, null);
+
+		parent = LayoutInflater.from(ctx).inflate(R.layout.admin_edit_item, null);
 		flatFont = Typeface.createFromAsset(ctx.getAssets(), "fonts/quicksand_light.ttf");
 		scanner = parent.findViewById(R.id.scanner_view);
 		swUseFlash = parent.findViewById(R.id.scanner_useflash);
 		header1 = parent.findViewById(R.id.et_header_1);
 		header2 = parent.findViewById(R.id.et_header_2);
-		btnAdd = parent.findViewById(R.id.bt_add);
+		btnSave = parent.findViewById(R.id.bt_save);
 		btnCancel = parent.findViewById(R.id.bt_cancel);
 		etId = parent.findViewById(R.id.et_itemid);
 		etName = parent.findViewById(R.id.et_itemname);
 		etWeight = parent.findViewById(R.id.et_itemweight);
 		etType = parent.findViewById(R.id.et_itemtype);
 		etWorth = parent.findViewById(R.id.et_itemworth);
-		
+
 		swUseFlash.setTypeface(flatFont);
 		header1.setTypeface(flatFont, Typeface.BOLD);
 		header2.setTypeface(flatFont, Typeface.BOLD);
-		btnAdd.setTypeface(flatFont, Typeface.BOLD);
+		btnSave.setTypeface(flatFont, Typeface.BOLD);
 		btnCancel.setTypeface(flatFont, Typeface.BOLD);
 		etId.setTypeface(flatFont);
 		etName.setTypeface(flatFont);
 		etWeight.setTypeface(flatFont);
 		etType.setTypeface(flatFont);
 		etWorth.setTypeface(flatFont);
-		
-		btnAdd.setEnabled(false);
-		btnAdd.setOnClickListener(this);
+
+		btnSave.setEnabled(false);
+		btnSave.setOnClickListener(this);
 		btnCancel.setOnClickListener(this);
 		swUseFlash.setOnCheckedChangeListener(this);
 		scanner.setResultHandler(this);
-		
+
 		scanner.setAspectTolerance(0.2f);
 		scanner.startCamera();
-		
+
 		etId.addTextChangedListener(new TextWatcher() {
 			@Override
 			public void beforeTextChanged(CharSequence cs, int p1, int p2, int p3)
 			{}
-			
+
 			@Override
 			public void afterTextChanged(Editable et)
 			{}
-			
+
 			@Override
 			public void onTextChanged(CharSequence cs, int p1, int p2, int p3)
 			{
@@ -131,16 +134,22 @@ public class AdminAddItemDialog implements CompoundButton.OnCheckedChangeListene
 					scanner.setVisibility(View.GONE);
 					swUseFlash.setVisibility(View.GONE);
 				}
-				
+
 				etName.setEnabled(!TextUtils.isEmpty(cs) && TextUtils.isDigitsOnly(cs));
 				etWeight.setEnabled(!TextUtils.isEmpty(cs) && TextUtils.isDigitsOnly(cs));
 				etType.setEnabled(!TextUtils.isEmpty(cs) && TextUtils.isDigitsOnly(cs));
 				etWorth.setEnabled(!TextUtils.isEmpty(cs) && TextUtils.isDigitsOnly(cs));
-				btnAdd.setEnabled(!TextUtils.isEmpty(cs) && TextUtils.isDigitsOnly(cs));
+				btnSave.setEnabled(!TextUtils.isEmpty(cs) && TextUtils.isDigitsOnly(cs));
 			}
 		});
-		etId.clearComposingText();
 		
+		etId.clearComposingText();
+		etId.setText(itemData.itemId);
+		etName.setText(itemData.itemName);
+		etWeight.setText(itemData.itemWeight);
+		etType.setText(itemData.itemType);
+		etWorth.setText(itemData.itemWorth);
+
 		dlg.setView(parent);
 	}
 	
@@ -149,9 +158,15 @@ public class AdminAddItemDialog implements CompoundButton.OnCheckedChangeListene
 	{
 		switch(view.getId())
 		{
-			case R.id.bt_add:
+			case R.id.bt_save:
 				if(BaseApplication.conn.isConnected(ctx))
 				{
+					String oldId = itemData.itemId;
+					String oldName = itemData.itemName;
+					String oldWeight = itemData.itemWeight;
+					String oldType = itemData.itemType;
+					String oldWorth = itemData.itemWorth;
+					
 					String id = etId.getText().toString();
 					String name = etName.getText().toString();
 					String weight = etWeight.getText().toString();
@@ -159,54 +174,45 @@ public class AdminAddItemDialog implements CompoundButton.OnCheckedChangeListene
 					String worth = etWorth.getText().toString();
 					
 					if(TextUtils.isEmpty(name))
-					{
-						etName.setError("Field can't be empty!");
-						return;
-					}
-					
+						etName.setText(oldName);
+
 					if(TextUtils.isEmpty(weight))
-					{
-						etWeight.setError("Field can't be empty!");
-						return;
-					}
-					
+						etWeight.setText(oldWeight);
+
 					if(TextUtils.isEmpty(type))
-					{
-						etType.setError("Field can't be empty!");
-						return;
-					}
-					
+						etType.setText(oldType);
+
 					if(TextUtils.isEmpty(worth))
-					{
-						etWorth.setError("Field can't be empty!");
-						return;
-					}
-					
+						etWorth.setText(oldWorth);
+
 					if(TextUtils.isDigitsOnly(weight))
 					{
+						etWeight.setText(oldWeight);
+						
 						new SweetAlertDialog(ctx, SweetAlertDialog.WARNING_TYPE)
 							.setTitleText("Warning")
 							.setContentText("Please specify it's weight with these conversions, ie: ml, mg, kg, etc.")
 							.setConfirmText("Okay")
 							.show();
-							
+
 						return;
 					}
-					
+
 					if(!TextUtils.isDigitsOnly(worth.replaceAll("[.]", "").replaceAll("¢", "").replaceAll("₱", "").replaceAll("$", "")))
 					{
 						etWorth.setError("Only numbers are allowed on this field!");
 						return;
 					}
-						
+
 					Double i = Double.parseDouble(worth);
 					if(i >= 1)
 						worth = "₱" + worth;
 					else
 						worth += "¢";
-						
+
 					HashMap<String, Object> data = new HashMap<>();
-					data.put("action_addNewItem", "");
+					data.put("action_updateItemData", "");
+					data.put("old_id", oldId);
 					data.put("item_id", id);
 					data.put("item_name", name);
 					data.put("item_weight", weight);
@@ -216,7 +222,7 @@ public class AdminAddItemDialog implements CompoundButton.OnCheckedChangeListene
 					final SweetAlertDialog swal = new SweetAlertDialog(ctx, SweetAlertDialog.PROGRESS_TYPE);
 					swal.setCancelable(false);
 					swal.setCanceledOnTouchOutside(false);
-					swal.setTitleText("Adding new item...");
+					swal.setTitleText("Updating item...");
 					swal.getProgressHelper().setBarColor(android.graphics.Color.parseColor("#00d170"));
 					swal.show();
 					
@@ -227,11 +233,10 @@ public class AdminAddItemDialog implements CompoundButton.OnCheckedChangeListene
 							{
 								dlg.dismiss();
 								swal.dismissWithAnimation();
-								
 								try {
 									JSONArray jar = new JSONArray(response);
 									JSONObject job = jar.getJSONObject(0);
-									
+
 									boolean hasError = job.getBoolean("hasError");
 									String message = job.getString("message");
 
@@ -242,20 +247,19 @@ public class AdminAddItemDialog implements CompoundButton.OnCheckedChangeListene
 									swal.setContentText(message);
 									swal.setConfirmText("Okay");
 									swal.show();
-									
+
 									activity.loadAllItemData();
 								} catch(Exception e) {
 									e.printStackTrace();
 								}
 							}
 						})
-						.setEndPoint("item/addNewItem.php")
+						.setEndPoint("item/updateItemData.php")
 						.sendRequest(data);
 				}
 			break;
 			
 			case R.id.bt_cancel:
-				scanner.stopCamera();
 				dlg.dismiss();
 				dlg = null;
 			break;
@@ -274,13 +278,13 @@ public class AdminAddItemDialog implements CompoundButton.OnCheckedChangeListene
 	{
 		etId.setText(result.getContents());
 		swUseFlash.setChecked(false);
-		
+
 		Handler resetHandler = new Handler();
 		resetHandler.postDelayed(new Runnable() {
 			@Override
 			public void run()
 			{
-				scanner.resumeCameraPreview(AdminAddItemDialog.this);
+				scanner.resumeCameraPreview(AdminEditItemDialog.this);
 			}
 		}, 5000);
 	}

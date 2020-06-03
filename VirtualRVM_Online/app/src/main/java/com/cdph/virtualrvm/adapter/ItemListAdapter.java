@@ -19,11 +19,18 @@ import android.support.v7.widget.RecyclerView.Adapter;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import cn.pedant.SweetAlert.SweetAlertDialog;
 import com.cdph.virtualrvm.AdminActivity;
+import com.cdph.virtualrvm.BaseApplication;
+import com.cdph.virtualrvm.dialog.AdminEditItemDialog;
 import com.cdph.virtualrvm.model.ItemModel;
+import com.cdph.virtualrvm.net.VolleyRequest;
+import com.cdph.virtualrvm.util.Constants;
 import com.cdph.virtualrvm.R;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class ItemListAdapter extends Adapter<ItemListAdapter.ItemListViewHolder> implements Filterable
 {
@@ -80,7 +87,56 @@ public class ItemListAdapter extends Adapter<ItemListAdapter.ItemListViewHolder>
 						{
 							dialog.dismissWithAnimation();
 							
-							//Delete Item
+							if(!BaseApplication.conn.isConnected(holder.context))
+								return;
+								
+							final SweetAlertDialog swal = new SweetAlertDialog(holder.context, SweetAlertDialog.PROGRESS_TYPE);
+							swal.getProgressHelper().setBarColor(android.graphics.Color.parseColor("#00d170"));
+							swal.setTitleText("Deleting item...");
+							swal.setCancelable(false);
+							swal.setCanceledOnTouchOutside(false);
+							swal.show();
+							
+							HashMap<String, Object> data = new HashMap<>();
+							data.put("action_deleteItemData", "");
+							data.put("item_id", model.itemId);
+							
+							VolleyRequest.newRequest(holder.context, Constants.BASE_URL)
+								.addOnVolleyResponseReceivedListener(new VolleyRequest.OnVolleyResponseReceivedListener() {
+									@Override
+									public void onVolleyResponseReceived(String response)
+									{
+										try {
+											swal.dismissWithAnimation();
+											
+											JSONArray jar = new JSONArray(response);
+											JSONObject job = jar.getJSONObject(0);
+
+											boolean hasError = job.getBoolean("hasError");
+											String message = job.getString("message");
+
+											SweetAlertDialog swal = new SweetAlertDialog(holder.context, ((hasError) ? SweetAlertDialog.ERROR_TYPE : SweetAlertDialog.SUCCESS_TYPE));
+											swal.setCancelable(false);
+											swal.setCanceledOnTouchOutside(false);
+											swal.setContentText(message);
+											swal.setTitleText((hasError) ? "Delete Failed" : "Delete Success");
+											swal.setConfirmText("Okay");
+											swal.setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+												@Override
+												public void onClick(SweetAlertDialog dlg)
+												{
+													dlg.dismissWithAnimation();
+													activity.loadAllItemData();
+												}
+											});
+											swal.show();
+										} catch(Exception e) {
+											e.printStackTrace();
+										}
+									}
+								})
+								.setEndPoint("item/deleteItemData.php")
+								.sendRequest(data);
 						}
 					})
 					.show();
@@ -91,7 +147,59 @@ public class ItemListAdapter extends Adapter<ItemListAdapter.ItemListViewHolder>
 			@Override
 			public void onClick(View v)
 			{
+				final SweetAlertDialog swal = new SweetAlertDialog(holder.context, SweetAlertDialog.PROGRESS_TYPE);
+				swal.setCancelable(false);
+				swal.setCanceledOnTouchOutside(false);
+				swal.setTitleText("Fetching item data...");
+				swal.getProgressHelper().setBarColor(android.graphics.Color.parseColor("#00d170"));
+				swal.show();
 				
+				HashMap<String, Object> data = new HashMap<>();
+				data.put("action_getItemData", "");
+				data.put("item_id", model.itemId);
+				
+				VolleyRequest.newRequest(holder.context, Constants.BASE_URL)
+					.addOnVolleyResponseReceivedListener(new VolleyRequest.OnVolleyResponseReceivedListener() {
+						@Override
+						public void onVolleyResponseReceived(String response)
+						{
+							swal.dismissWithAnimation();
+							try {
+								JSONArray jar = new JSONArray(response);
+								JSONObject job = jar.getJSONObject(0);
+
+								JSONArray jdat = job.getJSONArray("data");
+								JSONObject jobj = jdat.getJSONObject(0);
+								boolean hasError = job.getBoolean("hasError");
+								String message = job.getString("message");
+
+								if(!hasError)
+								{
+									AdminEditItemDialog.init(
+										holder.context, 
+										ItemModel.newItem(
+											jobj.getString("item_id"),
+											jobj.getString("item_name"),
+											jobj.getString("item_weight"),
+											jobj.getString("item_type"),
+											jobj.getString("item_worth")
+										)
+									).setActivity(activity).show();
+									return;
+								}
+
+								new SweetAlertDialog(holder.context, SweetAlertDialog.ERROR_TYPE)
+									.setTitleText("Fetching Failed")
+									.setContentText(message)
+									.setConfirmText("Okay")
+									.show();
+							} catch(Exception e) {
+								e.printStackTrace();
+							}
+						}
+					})
+					.setEndPoint("item/getItemData.php")
+					.sendRequest(data);
 			}
 		});
 	}
