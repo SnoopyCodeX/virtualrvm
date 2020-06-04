@@ -23,6 +23,7 @@ import cn.pedant.SweetAlert.SweetAlertDialog;
 import com.cdph.virtualrvm.AdminActivity;
 import com.cdph.virtualrvm.BaseApplication;
 import com.cdph.virtualrvm.dialog.AdminEditUserDialog;
+import com.cdph.virtualrvm.dialog.AdminVerifyCoinDialog;
 import com.cdph.virtualrvm.model.UserModel;
 import com.cdph.virtualrvm.net.VolleyRequest;
 import com.cdph.virtualrvm.util.Constants;
@@ -81,7 +82,62 @@ public class UserListAdapter extends Adapter<UserListAdapter.UserListViewHolder>
 				if(model.userName.equals(holder.prefs.getString(Constants.KEY_USERNAME, "")) || Integer.parseInt(model.userRank) == 1)
 					return;
 					
-				//Verify user coins then reset coins back to 0 if valid
+				if(!BaseApplication.conn.isConnected(holder.context))
+					return;
+					
+				final SweetAlertDialog swal = new SweetAlertDialog(holder.context, SweetAlertDialog.PROGRESS_TYPE);
+				swal.getProgressHelper().setBarColor(android.graphics.Color.parseColor("#00d170"));
+				swal.setTitleText("Fetching user data...");
+				swal.setCancelable(false);
+				swal.setCanceledOnTouchOutside(false);
+				swal.show();
+				
+				HashMap<String, Object> data = new HashMap<>();
+				data.put("action_getUserData", "");
+				data.put("user_name", model.userName);
+				
+				VolleyRequest.newRequest(holder.context, Constants.BASE_URL)
+					.addOnVolleyResponseReceivedListener(new VolleyRequest.OnVolleyResponseReceivedListener() {
+						@Override
+						public void onVolleyResponseReceived(String response)
+						{
+							swal.dismissWithAnimation();
+							
+							try {
+								JSONArray jar = new JSONArray(response);
+								JSONObject job = jar.getJSONObject(0);
+
+								JSONArray jdat = job.getJSONArray("data");
+								JSONObject jobj = jdat.getJSONObject(0);
+								boolean hasError = job.getBoolean("hasError");
+								String message = job.getString("message");
+
+								if(!hasError)
+								{
+									AdminVerifyCoinDialog.init(
+										holder.context, 
+										UserModel.newUser(
+											jobj.getString("user_name"),
+											jobj.getString("user_pass"),
+											jobj.getString("user_cent"),
+											String.valueOf(jobj.getInt("user_rank"))
+										)
+									).setActivity(activity).show();
+									return;
+								}
+
+								new SweetAlertDialog(holder.context, SweetAlertDialog.ERROR_TYPE)
+									.setTitleText("Fetching Failed")
+									.setContentText(message)
+									.setConfirmText("Okay")
+									.show();
+							} catch(Exception e) {
+								e.printStackTrace();
+							}
+						}
+					})
+					.setEndPoint("user/getUserData.php")
+					.sendRequest(data);
 			}
 		});
 		

@@ -27,9 +27,10 @@ public class AccountManager
 		return (new AccountManager(ctx));
 	}
 	
-	public AccountManager saveUserData(String username, String cent, int rank, boolean remember)
+	public AccountManager saveUserData(String username, String password, String cent, int rank, boolean remember)
 	{
 		editor.putString(Constants.KEY_USERNAME, username)
+			.putString(Constants.KEY_PASSWORD, password)
 			.putString(Constants.KEY_CENTS, cent)
 			.putInt(Constants.KEY_RANK, rank)
 			.putBoolean(Constants.KEY_REMEMBER, remember);

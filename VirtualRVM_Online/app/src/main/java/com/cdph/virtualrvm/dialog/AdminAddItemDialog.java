@@ -124,11 +124,13 @@ public class AdminAddItemDialog implements CompoundButton.OnCheckedChangeListene
 					header2.setVisibility(View.VISIBLE);
 					scanner.setVisibility(View.VISIBLE);
 					swUseFlash.setVisibility(View.VISIBLE);
+					scanner.startCamera();
 				}
 				else
 				{
 					header2.setVisibility(View.GONE);
 					scanner.setVisibility(View.GONE);
+					scanner.stopCamera();
 					swUseFlash.setVisibility(View.GONE);
 				}
 				

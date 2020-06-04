@@ -383,6 +383,7 @@ public class LoginRegisterActivity extends AppCompatActivity implements View.OnC
 									AccountManager.getInstance(LoginRegisterActivity.this)
 										.saveUserData(
 											obj.getString("user_name"),
+											obj.getString("user_pass"),
 											obj.getString("user_cent"),
 											obj.getInt("user_rank"),
 											rememberLogin
