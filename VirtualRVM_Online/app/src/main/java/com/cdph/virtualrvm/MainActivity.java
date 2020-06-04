@@ -293,6 +293,13 @@ public class MainActivity extends AppCompatActivity implements ZBarScannerView.R
 							preference.edit().putString(Constants.KEY_CENTS, _cents_).commit();
 							updatePersonalDetail(_cents_);
 							
+							String id = String.format("<font color=\"#00d170\">%s</font><br/>", model.itemId);
+							String name = String.format("<font color=\"#00d170\">%s</font><br/>", model.itemName);
+							String weight = String.format("<font color=\"#00d170\">%s</font><br/>", model.itemWeight);
+							String type = String.format("<font color=\"#00d170\">%s</font><br/>", model.itemType);
+							String worth = String.format("<font color=\"#00d170\">%s</font>", model.itemWorth);
+							scannerInfo.setText(Html.fromHtml(String.format(getString(R.string.scannerInfo_content), id, name, weight, type, worth)));
+							
 							final SweetAlertDialog swal = new SweetAlertDialog(MainActivity.this, SweetAlertDialog.PROGRESS_TYPE);
 							swal.getProgressHelper().setBarColor(android.graphics.Color.parseColor("#00d170"));
 							swal.setTitleText("Updating your coins...");
