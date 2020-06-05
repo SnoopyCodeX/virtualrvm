@@ -368,7 +368,7 @@ public class MainActivity extends AppCompatActivity implements ZBarScannerView.R
 			{
 				scannerView.resumeCameraPreview(MainActivity.this);
 			}
-		}, 100);
+		}, Constants.SCANNER_RELOAD_DELAY);
 	}
 	
 	@Override

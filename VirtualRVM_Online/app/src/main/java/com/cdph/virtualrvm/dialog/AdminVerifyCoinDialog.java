@@ -255,6 +255,6 @@ public class AdminVerifyCoinDialog implements View.OnClickListener, CompoundButt
 			{
 				scanner.resumeCameraPreview(AdminVerifyCoinDialog.this);
 			}
-		}, 100);
+		}, Constants.SCANNER_RELOAD_DELAY);
 	}
 }

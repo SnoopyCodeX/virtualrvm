@@ -288,6 +288,6 @@ public class AdminEditItemDialog implements CompoundButton.OnCheckedChangeListen
 			{
 				scanner.resumeCameraPreview(AdminEditItemDialog.this);
 			}
-		}, 5000);
+		}, Constants.SCANNER_RELOAD_DELAY);
 	}
 }
