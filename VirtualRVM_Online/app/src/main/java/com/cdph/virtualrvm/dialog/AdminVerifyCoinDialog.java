@@ -100,6 +100,12 @@ public class AdminVerifyCoinDialog implements View.OnClickListener, CompoundButt
 		scanner.setAspectTolerance(0.2f);
 		scanner.startCamera();
 		
+		if(Double.parseDouble(userData.userCent.replaceAll("[¢|₱]", "")) <= 0)
+		{
+			header2.setVisibility(View.GONE);
+			scanner.setVisibility(View.GONE);
+		}
+		
 		userCoin.setText(userData.userCent);
 		adminCoin.setText("0.0¢");
 		
