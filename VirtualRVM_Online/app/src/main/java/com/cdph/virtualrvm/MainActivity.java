@@ -141,7 +141,7 @@ public class MainActivity extends AppCompatActivity implements ZBarScannerView.R
 		
 		String username = preference.getString(Constants.KEY_USERNAME, "");
 		String cents = preference.getString(Constants.KEY_CENTS, "");
-		Double cent = Double.parseDouble(cents.replace("¢", "").replace("₱", ""));
+		Double cent = Double.parseDouble(cents.replaceAll("[¢|₱]", ""));
 		
 		if(cent >= 1)
 			cents = "₱" + String.valueOf(cent);
@@ -156,7 +156,7 @@ public class MainActivity extends AppCompatActivity implements ZBarScannerView.R
 		preference.edit().putString(Constants.KEY_CENTS, cent).commit();
 		String username = preference.getString(Constants.KEY_USERNAME, "");
 		String cents = preference.getString(Constants.KEY_CENTS, "");
-		Double _cent_ = Double.parseDouble(cents.replace("¢", "").replace("₱", ""));
+		Double _cent_ = Double.parseDouble(cents.replaceAll("[¢|₱]", ""));
 
 		if(_cent_ >= 1)
 			cents = "₱" + String.valueOf(_cent_);
@@ -286,8 +286,8 @@ public class MainActivity extends AppCompatActivity implements ZBarScannerView.R
 								jobj.getString("item_worth")
 							);
 
-							final Double itemWorth = Double.parseDouble(model.itemWorth.replaceAll("\b(¢|₱)\b", ""));
-							Double userCents = Double.parseDouble(preference.getString(Constants.KEY_CENTS, "").replaceAll("\b(¢|₱)\b", ""));
+							final Double itemWorth = Double.parseDouble(model.itemWorth.replaceAll("[¢|₱]", ""));
+							Double userCents = Double.parseDouble(preference.getString(Constants.KEY_CENTS, "").replaceAll("[¢|₱]", ""));
 							Double _cent_ = itemWorth + userCents;
 							String _cents_ = String.valueOf((_cent_ >= 1) ? "₱" + _cent_ : _cent_ + "¢");
 							preference.edit().putString(Constants.KEY_CENTS, _cents_).commit();
@@ -342,6 +342,8 @@ public class MainActivity extends AppCompatActivity implements ZBarScannerView.R
 								})
 								.setEndPoint("user/updateUserData.php")
 								.sendRequest(data);
+								
+							return;
 						}
 						
 						final SweetAlertDialog swp = new SweetAlertDialog(MainActivity.this, SweetAlertDialog.ERROR_TYPE);
@@ -354,19 +356,19 @@ public class MainActivity extends AppCompatActivity implements ZBarScannerView.R
 					} catch(Exception e) {
 						e.printStackTrace();
 					}
-					
-					Handler resetHandler = new Handler();
-					resetHandler.postDelayed(new Runnable() {
-						@Override
-						public void run()
-						{
-							scannerView.resumeCameraPreview(MainActivity.this);
-						}
-					}, 100);
 				}
 			})
 			.setEndPoint("item/getItemData.php")
 			.sendRequest(data);
+			
+		Handler resetHandler = new Handler();
+		resetHandler.postDelayed(new Runnable() {
+			@Override
+			public void run()
+			{
+				scannerView.resumeCameraPreview(MainActivity.this);
+			}
+		}, 100);
 	}
 	
 	@Override

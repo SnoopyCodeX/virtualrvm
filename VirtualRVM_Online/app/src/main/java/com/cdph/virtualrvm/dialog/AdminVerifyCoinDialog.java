@@ -163,12 +163,12 @@ public class AdminVerifyCoinDialog implements View.OnClickListener, CompoundButt
 								jobj.getString("item_worth")
 							);
 							
-							Double itemWorth = Double.parseDouble(model.itemWorth.replaceAll("\b(¢|₱)\b", ""));
-							Double admnCoins = Double.parseDouble(adminCoin.getText().toString().replaceAll("\b(¢|₱)\b", ""));
-							Double userCoins = Double.parseDouble(userCoin.getText().toString().replaceAll("\b(¢|₱)\b", ""));
-							admnCoins += itemWorth;
+							Double itemWorth = Double.parseDouble(model.itemWorth.replaceAll("[¢|₱]", ""));
+							Double admnCoins = Double.parseDouble(adminCoin.getText().toString().replaceAll("[¢|₱]", ""));
+							Double userCoins = Double.parseDouble(userCoin.getText().toString().replaceAll("[¢|₱]", ""));
+							adminCoin.setText(((admnCoins += itemWorth) >= 1) ? "₱" + admnCoins : admnCoins + "¢");
 							
-							if(admnCoins == userCoins)
+							if(admnCoins.doubleValue() == userCoins.doubleValue())
 							{
 								final SweetAlertDialog swp = new SweetAlertDialog(ctx, SweetAlertDialog.SUCCESS_TYPE);
 								swp.setCancelable(false);
@@ -193,7 +193,7 @@ public class AdminVerifyCoinDialog implements View.OnClickListener, CompoundButt
 
 										HashMap<String, Object> data = new HashMap<>();
 										data.put("action_updateUserData", "");
-										data.put("old_username", "");
+										data.put("old_username", userData.userName);
 										data.put("user_name", userData.userName);
 										data.put("user_pass", userData.userPass);
 										data.put("user_cent", "0.0¢");
@@ -243,18 +243,18 @@ public class AdminVerifyCoinDialog implements View.OnClickListener, CompoundButt
 					} catch(Exception e) {
 						e.printStackTrace();
 					}
-					
-					Handler reset = new Handler();
-					reset.postDelayed(new Runnable() {
-						@Override
-						public void run()
-						{
-							scanner.resumeCameraPreview(AdminVerifyCoinDialog.this);
-						}
-					}, 100);
 				}
 			})
 			.setEndPoint("item/getItemData.php")
 			.sendRequest(data);
+			
+		Handler reset = new Handler();
+		reset.postDelayed(new Runnable() {
+			@Override
+			public void run()
+			{
+				scanner.resumeCameraPreview(AdminVerifyCoinDialog.this);
+			}
+		}, 100);
 	}
 }

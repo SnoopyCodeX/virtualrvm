@@ -200,13 +200,13 @@ public class AdminEditItemDialog implements CompoundButton.OnCheckedChangeListen
 						return;
 					}
 
-					if(!TextUtils.isDigitsOnly(worth.replaceAll("[.]", "").replaceAll("¢", "").replaceAll("₱", "").replaceAll("$", "")))
+					if(!TextUtils.isDigitsOnly(worth.replaceAll("[.|¢|₱]", "")))
 					{
 						etWorth.setError("Only numbers are allowed on this field!");
 						return;
 					}
 
-					Double i = Double.parseDouble(worth);
+					Double i = Double.parseDouble(worth.replaceAll("[¢|₱]", ""));
 					if(i >= 1)
 						worth = "₱" + worth;
 					else

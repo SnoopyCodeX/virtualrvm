@@ -298,18 +298,21 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
 								emptyText.setVisibility(View.GONE);
 								contentList.setVisibility(View.VISIBLE);
 								contentList.setAdapter(adapter);
+								contentList.requestFocus();
 								return;
 							}
 							
 							contentList.setVisibility(View.GONE);
 							emptyText.setVisibility(View.VISIBLE);
 							emptyText.setText("No items found...");
+							emptyText.requestFocus();
 							return;
 						}
 						
 						contentList.setVisibility(View.GONE);
 						emptyText.setVisibility(View.VISIBLE);
 						emptyText.setText("No items found...");
+						emptyText.requestFocus();
 						
 						pd.changeAlertType(SweetAlertDialog.ERROR_TYPE);
 						pd.setTitleText("Operation Failed");
@@ -377,18 +380,21 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
 								emptyText.setVisibility(View.GONE);
 								contentList.setVisibility(View.VISIBLE);
 								contentList.setAdapter(adapter);
+								contentList.requestFocus();
 								return;
 							}
 
 							contentList.setVisibility(View.GONE);
 							emptyText.setVisibility(View.VISIBLE);
 							emptyText.setText("No users found...");
+							emptyText.requestFocus();
 							return;
 						}
 						
 						contentList.setVisibility(View.GONE);
 						emptyText.setVisibility(View.VISIBLE);
 						emptyText.setText("No users found...");
+						emptyText.requestFocus();
 
 						pd.changeAlertType(SweetAlertDialog.ERROR_TYPE);
 						pd.setTitleText("Operation Failed");

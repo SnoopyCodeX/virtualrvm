@@ -195,7 +195,7 @@ public class AdminAddItemDialog implements CompoundButton.OnCheckedChangeListene
 						return;
 					}
 					
-					if(!TextUtils.isDigitsOnly(worth.replaceAll("[.]", "").replaceAll("¢", "").replaceAll("₱", "").replaceAll("$", "")))
+					if(!TextUtils.isDigitsOnly(worth.replaceAll("[.|¢|₱]", "")))
 					{
 						etWorth.setError("Only numbers are allowed on this field!");
 						return;
