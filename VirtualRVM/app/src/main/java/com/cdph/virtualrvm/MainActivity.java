@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity implements ZBarScannerView.R
 {
 	private SharedPreferences preference;
 	private ZBarScannerView scannerView;
-	private Button signout;
+	private Button signout, contact;
 	private Switch useFlash;
 	private TextView scannerInfo, scannerInfoHeader, personalDetail, personalDetailHeader;
 	private Typeface flatFont;
@@ -129,9 +129,11 @@ public class MainActivity extends AppCompatActivity implements ZBarScannerView.R
 		scannerInfoHeader = findViewById(R.id.scanner_info_header);
 		useFlash = findViewById(R.id.scanner_useflash);
 		signout = findViewById(R.id.main_signout_btn);
+		contact = findViewById(R.id.main_contact_btn);
 		personalDetail = findViewById(R.id.personal_details);
 		personalDetailHeader = findViewById(R.id.personal_details_header);
 		
+		contact.setOnClickListener(this);
 		signout.setOnClickListener(this);
 		useFlash.setOnCheckedChangeListener(this);
 		useFlash.setTypeface(flatFont);
@@ -467,6 +469,7 @@ public class MainActivity extends AppCompatActivity implements ZBarScannerView.R
 										}
 										
 										//show dialog here
+										return;
 									}
 									
 									final SweetAlertDialog swp = new SweetAlertDialog(MainActivity.this, SweetAlertDialog.ERROR_TYPE);
