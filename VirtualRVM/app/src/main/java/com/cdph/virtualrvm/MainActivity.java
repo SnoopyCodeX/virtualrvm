@@ -21,6 +21,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import me.dm7.barcodescanner.zbar.Result;
 import me.dm7.barcodescanner.zbar.ZBarScannerView;
@@ -445,7 +446,7 @@ public class MainActivity extends AppCompatActivity implements ZBarScannerView.R
 								swal.dismissWithAnimation();
 								
 								try {
-									ArrayList<UserModel> admins = new ArrayList<>();
+									UserModel[] admins = null;;
 									JSONArray jar = new JSONArray(response);
 									JSONObject job = jar.getJSONObject(0);
 									
@@ -455,20 +456,32 @@ public class MainActivity extends AppCompatActivity implements ZBarScannerView.R
 									
 									if(!hasError)
 									{
+										admins = new UserModel[data.length()];
+										
 										for(int i = 0; i < data.length(); i++)
 										{
 											JSONObject admin = data.getJSONObject(i);
-											admins.add(UserModel.newUser(
+											admins[i] = UserModel.newUser(
 												admin.getString("user_name"),
 												admin.getString("user_pass"),
 												admin.getString("user_cent"),
 												String.valueOf(admin.getInt("user_rank")),
 												admin.getString("user_email"),
 												admin.getString("user_number")
-											));
+											);
 										}
 										
-										//show dialog here
+										String html = "<h3>%s</h3><h4>Email: <a href=\"mailto: %s?subject=VirtualRVM Exchange Request\">%s</a></h4><h4>Phone: <a href=\"tel: %s\">%s</a></h4><br/>";
+										String cntn = "";
+										for(UserModel user : admins)
+											cntn += String.format(html, user.userName, user.userEmail, user.userEmail, user.userNumber, user.userNumber);
+											
+										AlertDialog dlg = new AlertDialog.Builder(MainActivity.this).create();
+										dlg.setCancelable(true);
+										dlg.setCanceledOnTouchOutside(false);
+										dlg.setMessage(Html.fromHtml(cntn));
+										dlg.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
+										dlg.show();
 										return;
 									}
 									
