@@ -187,14 +187,14 @@ public class AdminEditUserDialog implements View.OnClickListener, AdapterView.On
 						if(TextUtils.isEmpty(newNumber))
 							newNumber = oldNumber;
 
-						if(!newEmail.matches("[a-zA-Z0-9]+[\\.a-zA-Z0-9]+\\@[a-zA-Z0-9]+\\.[a-zA-Z0-9]+"))
+						if(!newEmail.matches("[a-zA-Z0-9]+[\\.a-zA-Z0-9]+\\@[a-zA-Z0-9]+\\.[a-zA-Z0-9]+") && spRank.getSelectedItemPosition() != 1)
 						{
 							etEmail.setError("Not a valid email address");
 							return;
 						}
 
 						newNumber = (newNumber.charAt(0) == '+' || newNumber.charAt(0) == '0') ? newNumber :  "+" + newNumber;
-						if(!newNumber.matches("^[\\+]?\\d{11,14}$"))
+						if(!newNumber.matches("^[\\+]?\\d{11,14}$") && spRank.getSelectedItemPosition() != 1)
 						{
 							etNumber.setError("Not a valid phone number");
 							return;
@@ -276,6 +276,8 @@ public class AdminEditUserDialog implements View.OnClickListener, AdapterView.On
 	@Override
 	public void onItemSelected(AdapterView<?> adapter, View view, int position, long id)
 	{
+		etEmail.setVisibility((position == 1) ? View.VISIBLE : View.GONE);
+		etNumber.setVisibility((position == 1) ? View.VISIBLE : View.GONE);
 		etCent.setVisibility((position == 1) ? View.GONE : View.VISIBLE);
 	}
 
