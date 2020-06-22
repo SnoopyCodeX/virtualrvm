@@ -109,6 +109,8 @@ public class AdminEditUserDialog implements View.OnClickListener, AdapterView.On
 		btnCancel.setOnClickListener(this);
 		
 		etUser.setTypeface(flatFont);
+		etEmail.setTypeface(flatFont);
+		etNumber.setTypeface(flatFont);
 		etPass.setTypeface(flatFont);
 		etCent.setTypeface(flatFont);
 		btnSave.setTypeface(flatFont);
@@ -147,128 +149,127 @@ public class AdminEditUserDialog implements View.OnClickListener, AdapterView.On
 	@Override
 	public void onClick(View view)
 	{
-		switch(view.getId())
-		{
-			case R.id.bt_save:
-				if(BaseApplication.conn.isConnected(ctx))
-				{
-					String oldUsername = userData.userName;
-					String oldEmail = userData.userEmail;
-					String oldNumber = userData.userNumber;
-					String oldPassword = new String(Base64.decode(userData.userPass, Base64.DEFAULT));
-					String oldCents = userData.userCent;
-					String oldRank = userData.userRank;
-					String newUsername = etUser.getText().toString();
-					String newEmail = etEmail.getText().toString();
-					String newNumber = etNumber.getText().toString();
-					String newPassword = etPass.getText().toString();
-					String newCents = etCent.getText().toString();
-					String newRank = String.valueOf(spRank.getSelectedItemPosition());
-					dlg.dismiss();
-					
-					if(oldUsername.equals(newUsername) && oldEmail.equals(newEmail) && oldNumber.equals(newNumber) && oldCents.equals(newCents) && oldRank.equals(newRank))
-						return;
-						
-					if(TextUtils.isEmpty(newUsername))
-						newUsername = oldUsername;
-						
-					if(TextUtils.isEmpty(newPassword))
-						newPassword = oldPassword;
-						
-					if(TextUtils.isEmpty(newCents))
-						newCents = oldCents;
-						
-					if(TextUtils.isEmpty(newRank))
-						newRank = oldRank;
-						
-					if(TextUtils.isEmpty(newEmail))
-						newEmail = oldEmail;
-						
-					if(TextUtils.isEmpty(newNumber))
-						newNumber = oldNumber;
-						
-					if(oldUsername.equals(newUsername) && oldEmail.equals(newEmail) && oldNumber.equals(newNumber) && oldCents.equals(newCents) && oldRank.equals(newRank))
-						return;
-						
-					if(!newEmail.matches("[a-zA-Z0-9]+[\\.a-zA-Z0-9]+\\@[a-zA-Z0-9]+\\.[a-zA-Z0-9]+"))
+		try {
+			switch(view.getId())
+			{
+				case R.id.bt_save:
+					if(BaseApplication.conn.isConnected(ctx))
 					{
-						etEmail.setError("Not a valid email address");
-						return;
-					}
+						String oldUsername = userData.userName;
+						String oldEmail = userData.userEmail;
+						String oldNumber = userData.userNumber;
+						String oldPassword = new String(Base64.decode(userData.userPass, Base64.DEFAULT));
+						String oldCents = userData.userCent;
+						String oldRank = userData.userRank;
+						String newUsername = etUser.getText().toString();
+						String newEmail = etEmail.getText().toString();
+						String newNumber = etNumber.getText().toString();
+						String newPassword = etPass.getText().toString();
+						String newCents = etCent.getText().toString();
+						String newRank = String.valueOf(spRank.getSelectedItemPosition());
+						dlg.dismiss();
 
-					newNumber = (newNumber.contains("+")) ? newNumber : "+" + newNumber;
-					if(!newNumber.matches("[\\+]\\d+") || !((newNumber.length() <= 14) && (newNumber.length() >= 12)))
-					{
-						etNumber.setError("Not a valid phone number");
-						return;
-					}
-						
-					if(!newCents.contains("¢") || !newCents.contains("₱"))
-					{
-						double i = Double.parseDouble(newCents.replaceAll("[¢|₱]", ""));
+						if(TextUtils.isEmpty(newUsername))
+							newUsername = oldUsername;
 
+						if(TextUtils.isEmpty(newPassword))
+							newPassword = oldPassword;
+
+						if(TextUtils.isEmpty(newCents))
+							newCents = oldCents;
+
+						if(TextUtils.isEmpty(newRank))
+							newRank = oldRank;
+
+						if(TextUtils.isEmpty(newEmail))
+							newEmail = oldEmail;
+
+						if(TextUtils.isEmpty(newNumber))
+							newNumber = oldNumber;
+
+						if(!newEmail.matches("[a-zA-Z0-9]+[\\.a-zA-Z0-9]+\\@[a-zA-Z0-9]+\\.[a-zA-Z0-9]+"))
+						{
+							etEmail.setError("Not a valid email address");
+							return;
+						}
+
+						newNumber = (newNumber.charAt(0) == '+' || newNumber.charAt(0) == '0') ? newNumber :  "+" + newNumber;
+						if(!newNumber.matches("^[\\+]?\\d{11,14}$"))
+						{
+							etNumber.setError("Not a valid phone number");
+							return;
+						}
+
+						double i = Double.parseDouble(newCents.replaceAll("[¢|₱]", "").replaceAll("[¢|₱]", ""));
 						if(i >= 1)
 							newCents = "₱" + i;
 						else
 							newCents = i + "¢";
-					}
-						
-					HashMap<String, Object> data = new HashMap<>();
-					data.put("action_updateUserData", "");
-					data.put("old_username", oldUsername);
-					data.put("user_name", newUsername);
-					data.put("user_pass", Base64.encodeToString(newPassword.getBytes(), Base64.DEFAULT));
-					data.put("user_cent", newCents);
-					data.put("user_rank", spRank.getSelectedItemPosition());
-					data.put("user_email", newEmail);
-					data.put("user_number", newNumber);
-						
-					final SweetAlertDialog swal = new SweetAlertDialog(ctx, SweetAlertDialog.PROGRESS_TYPE);
-					swal.setCancelable(false);
-					swal.setCanceledOnTouchOutside(false);
-					swal.setTitleText("Updating user...");
-					swal.getProgressHelper().setBarColor(android.graphics.Color.parseColor("#00d170"));
-					swal.show();
-					
-					VolleyRequest.newRequest(ctx, Constants.BASE_URL)
-						.addOnVolleyResponseReceivedListener(new VolleyRequest.OnVolleyResponseReceivedListener() {
-							@Override
-							public void onVolleyResponseReceived(String response)
-							{
-								swal.dismissWithAnimation();
-								
-								try {
-									JSONArray jar = new JSONArray(response);
-									JSONObject job = jar.getJSONObject(0);
-									
-									boolean hasError = job.getBoolean("hasError");
-									String message = job.getString("message");
-									
-									SweetAlertDialog swal = new SweetAlertDialog(ctx, (hasError) ? SweetAlertDialog.ERROR_TYPE : SweetAlertDialog.SUCCESS_TYPE);
-									swal.setCancelable(false);
-									swal.setCanceledOnTouchOutside(false);
-									swal.setTitleText((hasError) ? "Update Failed" : "Update Success");
-									swal.setContentText(message);
-									swal.setConfirmText("Okay");
-									swal.show();
-									
-									activity.loadAllUserData();
-								} catch(Exception e) {
-									e.printStackTrace();
+
+						HashMap<String, Object> data = new HashMap<>();
+						data.put("action_updateUserData", "");
+						data.put("old_username", oldUsername);
+						data.put("user_name", newUsername);
+						data.put("user_pass", Base64.encodeToString(newPassword.getBytes(), Base64.DEFAULT));
+						data.put("user_cent", newCents);
+						data.put("user_rank", spRank.getSelectedItemPosition());
+						data.put("user_email", newEmail);
+						data.put("user_number", newNumber);
+
+						final SweetAlertDialog swal = new SweetAlertDialog(ctx, SweetAlertDialog.PROGRESS_TYPE);
+						swal.setCancelable(false);
+						swal.setCanceledOnTouchOutside(false);
+						swal.setTitleText("Updating user...");
+						swal.getProgressHelper().setBarColor(android.graphics.Color.parseColor("#00d170"));
+						swal.show();
+
+						VolleyRequest.newRequest(ctx, Constants.BASE_URL)
+							.addOnVolleyResponseReceivedListener(new VolleyRequest.OnVolleyResponseReceivedListener() {
+								@Override
+								public void onVolleyResponseReceived(String response)
+								{
+									swal.dismissWithAnimation();
+
+									try {
+										JSONArray jar = new JSONArray(response);
+										JSONObject job = jar.getJSONObject(0);
+
+										boolean hasError = job.getBoolean("hasError");
+										String message = job.getString("message");
+
+										SweetAlertDialog swal = new SweetAlertDialog(ctx, (hasError) ? SweetAlertDialog.ERROR_TYPE : SweetAlertDialog.SUCCESS_TYPE);
+										swal.setCancelable(false);
+										swal.setCanceledOnTouchOutside(false);
+										swal.setTitleText((hasError) ? "Update Failed" : "Update Success");
+										swal.setContentText(message);
+										swal.setConfirmText("Okay");
+										swal.show();
+
+										activity.loadAllUserData();
+									} catch(Exception e) {
+										e.printStackTrace();
+
+										android.util.Log.d(AdminEditUserDialog.class.getSimpleName(), e.getCause().getMessage());
+									}
 								}
-							}
-						})
-						.setEndPoint("user/updateUserData.php")
-						.sendRequest(data);
-					
-					return;
-				}
-			break;
+							})
+							.setEndPoint("user/updateUserData.php")
+							.sendRequest(data);
+
+						return;
+					}
+				break;
+
+				case R.id.bt_cancel:
+					dlg.dismiss();
+					dlg = null;
+				break;
+			}
+		} catch(Exception e) {
+			e.printStackTrace();
 			
-			case R.id.bt_cancel:
-				dlg.dismiss();
-				dlg = null;
-			break;
+			android.util.Log.d(AdminEditUserDialog.class.getSimpleName(), e.getMessage());
+			android.widget.Toast.makeText(ctx, e.getMessage(), android.widget.Toast.LENGTH_LONG).show();
 		}
 	}
 	

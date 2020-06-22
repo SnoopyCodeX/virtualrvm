@@ -27,6 +27,7 @@ import me.dm7.barcodescanner.zbar.ZBarScannerView;
 import cn.pedant.SweetAlert.SweetAlertDialog;
 import com.cdph.virtualrvm.auth.AccountManager;
 import com.cdph.virtualrvm.model.ItemModel;
+import com.cdph.virtualrvm.model.UserModel;
 import com.cdph.virtualrvm.net.InternetConnection;
 import com.cdph.virtualrvm.net.VolleyRequest;
 import com.cdph.virtualrvm.util.Constants;
@@ -357,6 +358,14 @@ public class MainActivity extends AppCompatActivity implements ZBarScannerView.R
 						swp.show();
 					} catch(Exception e) {
 						e.printStackTrace();
+						
+						final SweetAlertDialog swp = new SweetAlertDialog(MainActivity.this, SweetAlertDialog.ERROR_TYPE);
+						swp.setCancelable(false);
+						swp.setCanceledOnTouchOutside(false);
+						swp.setTitleText("Verifying Failed");
+						swp.setContentText("Item is not yet supported");
+						swp.setConfirmText("Okay");
+						swp.show();
 					}
 				}
 			})
@@ -411,6 +420,70 @@ public class MainActivity extends AppCompatActivity implements ZBarScannerView.R
 							startActivity(new Intent(MainActivity.this, LoginRegisterActivity.class));
 						}
 					}).show();
+			break;
+			
+			case R.id.main_contact_btn:
+				if(BaseApplication.conn.isConnected(this))
+				{
+					HashMap<String, Object> data = new HashMap<>();
+					data.put("action_getAllUserData_admins", "");
+					
+					final SweetAlertDialog swal = new SweetAlertDialog(this, SweetAlertDialog.PROGRESS_TYPE);
+					swal.getProgressHelper().setBarColor(android.graphics.Color.parseColor("#00d170"));
+					swal.setTitleText("Fetching active admins...");
+					swal.setCancelable(false);
+					swal.setCanceledOnTouchOutside(false);
+					swal.show();
+					
+					VolleyRequest.newRequest(this, Constants.BASE_URL)
+						.addOnVolleyResponseReceivedListener(new VolleyRequest.OnVolleyResponseReceivedListener() {
+							@Override
+							public void onVolleyResponseReceived(String response)
+							{
+								swal.dismissWithAnimation();
+								
+								try {
+									ArrayList<UserModel> admins = new ArrayList<>();
+									JSONArray jar = new JSONArray(response);
+									JSONObject job = jar.getJSONObject(0);
+									
+									boolean hasError = job.getBoolean("hasError");
+									String message = job.getString("message");
+									JSONArray data = job.getJSONArray("data");
+									
+									if(!hasError)
+									{
+										for(int i = 0; i < data.length(); i++)
+										{
+											JSONObject admin = data.getJSONObject(i);
+											admins.add(UserModel.newUser(
+												admin.getString("user_name"),
+												admin.getString("user_pass"),
+												admin.getString("user_cent"),
+												String.valueOf(admin.getInt("user_rank")),
+												admin.getString("user_email"),
+												admin.getString("user_number")
+											));
+										}
+										
+										//show dialog here
+									}
+									
+									final SweetAlertDialog swp = new SweetAlertDialog(MainActivity.this, SweetAlertDialog.ERROR_TYPE);
+									swp.setCancelable(false);
+									swp.setCanceledOnTouchOutside(false);
+									swp.setTitleText("Fetching Failed");
+									swp.setContentText(message);
+									swp.setConfirmText("Okay");
+									swp.show();
+								} catch(Exception e) {
+									e.printStackTrace();
+								}
+							}
+						})
+						.setEndPoint("user/getAllUsers.php")
+						.sendRequest(data);
+				}
 			break;
 		}
 	}

@@ -169,23 +169,19 @@ public class AdminAddUserDialog implements View.OnClickListener, AdapterView.OnI
 						return;
 					}
 					
-					newNumber = (newNumber.contains("+")) ? newNumber : "+" + newNumber;
-					if(!newNumber.matches("[\\+]\\d+") || !((newNumber.length() <= 14) && (newNumber.length() >= 12)))
+					newNumber = (newNumber.charAt(0) == '+' || newNumber.charAt(0) == '0') ? newNumber :  "+" + newNumber;
+					if(!newNumber.matches("^[\\+]?\\d{11,14}$"))
 					{
 						etNumber.setError("Not a valid phone number");
 						return;
 					}
 					
 					dlg.dismiss();
-					if(!newCents.contains("¢") || !newCents.contains("₱"))
-					{
-						double i = Double.parseDouble(newCents);
-						
-						if(i >= 1)
-							newCents = "₱" + i;
-						else
-							newCents = i + "¢";
-					}
+					double i = Double.parseDouble(newCents.replaceAll("[¢|₱]", "").replaceAll("[¢|₱]", ""));
+					if(i >= 1)
+						newCents = "₱" + i;
+					else
+						newCents = i + "¢";
 
 					HashMap<String, Object> data = new HashMap<>();
 					data.put("action_addNewUser", "");

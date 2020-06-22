@@ -104,6 +104,7 @@ public class AdminVerifyCoinDialog implements View.OnClickListener, CompoundButt
 		{
 			header2.setVisibility(View.GONE);
 			scanner.setVisibility(View.GONE);
+			scannerUseFlash.setVisibility(View.GONE);
 		}
 		
 		userCoin.setText(userData.userCent);

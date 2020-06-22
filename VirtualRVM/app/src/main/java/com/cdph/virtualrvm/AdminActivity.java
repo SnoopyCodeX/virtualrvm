@@ -336,7 +336,7 @@ public class AdminActivity extends AppCompatActivity implements BottomNavigation
 			return;
 		
 		HashMap<String, Object> data = new HashMap<>();
-		data.put("action_getAllUsers", "");
+		data.put("action_getAllUserData", "");
 		
 		final SweetAlertDialog pd = new SweetAlertDialog(this, SweetAlertDialog.PROGRESS_TYPE);
 		pd.getProgressHelper().setBarColor(android.graphics.Color.parseColor("#00d170"));

@@ -59,11 +59,16 @@ public class VolleyRequest
 			public void onErrorResponse(VolleyError error)
 			{
 				if(listener != null)
-					listener.onVolleyResponseReceived(error.getMessage());
+					listener.onVolleyResponseReceived(String.format("[{\"message\":\"%s\", \"hasError\":true, \"data\":[]}]", error.getMessage()));
 			}
 		};
 		
-		StringRequest request = new StringRequest(Request.Method.POST, baseUrl + endPoint, _response_, _error_) {
+		StringRequest request = new StringRequest(
+			Request.Method.POST, 
+			baseUrl + endPoint, 
+			_response_, 
+			_error_
+		) {
 			@Override
 			protected Map<String, String> getParams()
 			{

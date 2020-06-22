@@ -218,7 +218,14 @@ public class ItemListAdapter extends Adapter<ItemListAdapter.ItemListViewHolder>
 	
 	private String firstLetterToUpperCase(String text)
 	{
-		return (String.valueOf(text.charAt(0)).toUpperCase()) + text.substring(1, text.length());
+		String[] texts = text.split(" ");
+		String ups = "";
+		
+		for(String txt : texts)
+			ups += (String.valueOf(txt.charAt(0)).toUpperCase() + txt.substring(1, txt.length())) + " ";
+		
+		ups = ups.substring(0, ups.length()-1);
+		return ups;
 	}
     
 	public class ItemListViewHolder extends ViewHolder

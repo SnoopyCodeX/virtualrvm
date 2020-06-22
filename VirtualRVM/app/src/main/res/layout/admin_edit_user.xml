@@ -73,7 +73,7 @@
 						android:layout_height="wrap_content"
 						android:layout_marginBottom="10dp"
 						android:hint="Phone Number"
-						android:inputType="textPhonetic"
+						android:inputType="phone"
 						android:singleLine="true"
 						android:imeOptions="actionNext"
 						android:textColor="@color/tealishGreen"

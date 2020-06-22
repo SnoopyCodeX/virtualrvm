@@ -4,6 +4,7 @@
 	
     <string name="tab_signin">Sign In</string>
 	<string name="tab_signup">Sign Up</string>
+	<string name="tab_contact">Contact Admin</string>
 	
 	<string name="header_signin">Client Signin</string>
 	<string name="header_signup">Client Signup</string>
@@ -30,7 +31,7 @@
 	<string name="useflash_on">Disable flash</string>
 	<string name="useflash_off">Enable flash</string>
 	<string name="personalDetail_header">Personal Details</string>
-	<string name="personalDetail_content" formatted="false">Username: %s\nCents: %s</string>
+	<string name="personalDetail_content" formatted="false">Username: %s\nCoins: %s</string>
 	<string name="scannerInfo_header">Item Details</string>
 	<string name="scannerInfo_content" formatted="false">ID: %s\nName: %s\nWeight: %s\nType: %s\nExchange Amount: %s</string>
 	
