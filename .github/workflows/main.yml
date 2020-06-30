@@ -9,7 +9,6 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-
     - uses: actions/checkout@v2
 
     - name: Automatic Releases
