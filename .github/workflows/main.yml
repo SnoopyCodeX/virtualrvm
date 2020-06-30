@@ -10,8 +10,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-     uses: actions/checkout@v2
-
     - name: Automatic Releases
       uses: marvinpinto/action-automatic-releases@v1.0.0
 
