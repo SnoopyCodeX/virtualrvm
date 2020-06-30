@@ -1,20 +1,23 @@
-name: CI
+name: "Automatic Release"
 
 on:
-
   push:
-    branches: [ master ]
+    branches: ["master"]
+    tags:
+      - "v*"
 
 jobs:
+  tagged-release:
+    name: "Tagged Release"
+    runs-on: "ubuntu-latest"
 
-  build:
-    runs-on: ubuntu-latest
     steps:
-    - name: Automatic Releases
-      uses: marvinpinto/action-automatic-releases@v1.0.0
-      with:
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: false
+          automatic_release_tag: "latest"
+          title: "Latest Release"
           files: |
             LICENSE.txt
             *.jar
