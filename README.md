@@ -1,3 +1,3 @@
-###VirtualRVM
-[![DepShield Badge](https://depshield.sonatype.org/badges/SnoopyCodeX/repository/depshield.svg)](https://depshield.github.io)
->Requested build (client_1)
+### VirtualRVM
+
+A simple mobile app-based virtual reverse vending machine designed to mimic a real reverse vending machine.
